@@ -1,0 +1,44 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${ORDERSDB_CONTAINER_NAME}:${POSTGRESDB_DOCKER_PORT}/${POSTGRESDB_ORDERS_NAME}
+    username: ${POSTGRESDB_USER}
+    password: ${POSTGRESDB_PASSWORD}
+    driverClassName: org.postgresql.Driver
+  jpa:
+    hibernate.ddlAuto: update
+    database: postgresql
+    databasePlatform: org.hibernate.dialect.PostgreSQLDialect
+  kafka:
+    bootstrapServers: ${KAFKA_CONTAINER_NAME}:9092
+    producer:
+      keySerializer: org.apache.kafka.common.serialization.StringSerializer
+      valueSerializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      groupId: order-group
+      autoOffsetReset: earliest
+      keyDeserializer: org.apache.kafka.common.serialization.StringDeserializer
+#      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      valueDeserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+#      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+#        spring:
+#          deserializer:
+#            value:
+#              delegate:
+#                class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json:
+          trusted.packages: '*'
+          type.mapping: ticketResponseDto:com.travel.application.orderservice.dto.TicketResponseDto
+
+logging:
+  config: classpath:logback-spring.xml
+
+server:
+  port: ${ORDER_SERVER_PORT}
+
+eureka:
+  instance:
+    hostname: ${ORDER_SERVICE_CONTAINER_NAME}
+  client:
+    registerWithEureka: true
+    fetchRegistry: true

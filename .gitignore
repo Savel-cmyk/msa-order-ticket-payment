@@ -1,0 +1,7 @@
+/.env
+/docker-compose.yml
+/gradlew
+/gradlew.bat
+/logstash/config/logstash.yml
+/.gradle/
+/.idea/

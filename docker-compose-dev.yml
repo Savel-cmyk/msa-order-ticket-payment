@@ -1,0 +1,299 @@
+services:
+  config-server:
+    build:
+      context: ./config-server
+      dockerfile: ./Dockerfile
+    env_file:
+      - .env
+    container_name: ${CONFIG_SERVER_CONTAINER_NAME}
+    ports:
+      - "${CONFIG_SERVER_PORT}:${CONFIG_SERVER_PORT}"
+    healthcheck:
+      test: ["CMD", "sh", "-c", "curl --fail --silent http://localhost:${CONFIG_SERVER_PORT}/actuator/health | grep 'UP'"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - microservices-net
+
+  eureka-server:
+    build:
+      context: ./eureka-server
+      dockerfile: ./Dockerfile
+    env_file:
+      - .env
+    container_name: ${EUREKA_SERVER_CONTAINER_NAME}
+    ports:
+      - "${EUREKA_SERVER_PORT}:${EUREKA_SERVER_PORT}"
+    healthcheck:
+      test: [ "CMD", "sh", "-c", "curl --fail --silent http://localhost:${EUREKA_SERVER_PORT}/actuator/health | grep 'UP'" ]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - microservices-net
+    depends_on:
+      config-server:
+        condition: service_healthy
+
+  gateway-service:
+    build:
+      context: ./gateway-service
+      dockerfile: ./Dockerfile
+    env_file:
+      - .env
+    container_name: ${GATEWAY_SERVICE_CONTAINER_NAME}
+    ports:
+      - "${GATEWAY_SERVER_PORT}:${GATEWAY_SERVER_PORT}"
+    networks:
+      - microservices-net
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "sh", "-c", "curl --fail --silent http://localhost:${GATEWAY_SERVER_PORT}/actuator/health | grep 'UP'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  orders_db:
+    image: postgres
+    env_file:
+      - .env
+    container_name: ${ORDERSDB_CONTAINER_NAME}
+    environment:
+      POSTGRES_USER: ${POSTGRESDB_USER}
+      POSTGRES_PASSWORD: ${POSTGRESDB_PASSWORD}
+      POSTGRES_DB: ${POSTGRESDB_ORDERS_NAME}
+    volumes:
+      - pg_data_orders:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRESDB_ORDERS_PORT}:${POSTGRESDB_DOCKER_PORT}"
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRESDB_USER} -d ${POSTGRESDB_ORDERS_NAME}'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: ./Dockerfile
+    env_file:
+      - .env
+    container_name: ${ORDER_SERVICE_CONTAINER_NAME}
+    ports:
+      - "${ORDER_SERVER_PORT}:${ORDER_SERVER_PORT}"
+    networks:
+      - microservices-net
+    depends_on:
+      gateway-service:
+        condition: service_healthy
+      orders_db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      kibana:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD", "sh", "-c", "curl --fail --silent http://localhost:${ORDER_SERVER_PORT}/actuator/health | grep 'UP'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  payment_db:
+    image: postgres
+    env_file:
+      - .env
+    container_name: ${PAYMENTDB_CONTAINER_NAME}
+    environment:
+      POSTGRES_USER: ${POSTGRESDB_USER}
+      POSTGRES_PASSWORD: ${POSTGRESDB_PASSWORD}
+      POSTGRES_DB: ${POSTGRESDB_PAYMENT_NAME}
+    volumes:
+      - pg_data_payment:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRESDB_PAYMENT_PORT}:${POSTGRESDB_DOCKER_PORT}"
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRESDB_USER} -d ${POSTGRESDB_PAYMENT_NAME}'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
+  payment-service:
+    build:
+      context: ./payment-service
+      dockerfile: ./Dockerfile
+    env_file:
+      - .env
+    container_name: ${PAYMENT_SERVICE_CONTAINER_NAME}
+    ports:
+      - "${PAYMENT_SERVER_PORT}:${PAYMENT_SERVER_PORT}"
+    networks:
+      - microservices-net
+    depends_on:
+      gateway-service:
+        condition: service_healthy
+      payment_db:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "sh", "-c", "curl --fail --silent http://localhost:${PAYMENT_SERVER_PORT}/actuator/health | grep 'UP'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  tickets_db:
+    image: postgres
+    env_file:
+      - .env
+    container_name: ${TICKETSDB_CONTAINER_NAME}
+    environment:
+      POSTGRES_USER: ${POSTGRESDB_USER}
+      POSTGRES_PASSWORD: ${POSTGRESDB_PASSWORD}
+      POSTGRES_DB: ${POSTGRESDB_TICKETS_NAME}
+    volumes:
+      - pg_data_tickets:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRESDB_TICKETS_PORT}:${POSTGRESDB_DOCKER_PORT}"
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRESDB_USER} -d ${POSTGRESDB_TICKETS_NAME}'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
+  ticket-service:
+    build:
+      context: ./ticket-service
+      dockerfile: ./Dockerfile
+    env_file:
+      - .env
+    container_name: ${TICKET_SERVICE_CONTAINER_NAME}
+    ports:
+      - "${TICKET_SERVER_PORT}:${TICKET_SERVER_PORT}"
+    networks:
+      - microservices-net
+    depends_on:
+      gateway-service:
+        condition: service_healthy
+      orders_db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "sh", "-c", "curl --fail --silent http://localhost:${TICKET_SERVER_PORT}/actuator/health | grep 'UP'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "22181:2181"
+    networks:
+      - microservices-net
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: ${KAFKA_CONTAINER_NAME}
+    depends_on:
+      - zookeeper
+    ports:
+      - "${KAFKA_PORT}:${KAFKA_PORT}"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://${KAFKA_CONTAINER_NAME}:9092,PLAINTEXT_HOST://localhost:${KAFKA_PORT}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: [ "CMD", "kafka-broker-api-versions", "--bootstrap-server", "kafka:${KAFKA_PORT}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices-net
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.2
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+    container_name: elasticsearch
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - microservices-net
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.16.2
+    container_name: logstash
+    volumes:
+      - ./logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    ports:
+      - "5044:5044"
+    depends_on:
+      - elasticsearch
+    networks:
+      - microservices-net
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.16.2
+    container_name: kibana
+    depends_on:
+      - logstash
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - microservices-net
+
+#  mail-dev:
+#    container_name: mail_dev
+#    image: maildev/maildev
+#    ports:
+#      - "1080:1080"
+#      - "1025:1025"
+
+networks:
+  microservices-net:
+    driver: bridge
+
+volumes:
+  pg_data_orders:
+  pg_data_payment:
+  pg_data_tickets:
+  es_data:

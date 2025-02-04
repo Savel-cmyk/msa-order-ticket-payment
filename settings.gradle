@@ -1,0 +1,3 @@
+rootProject.name = 'msa-order-ticket-payment'
+
+includeBuild 'eureka-server'

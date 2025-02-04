@@ -1,0 +1,28 @@
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: order-service
+          uri: lb:http://ORDER-SERVICE
+          predicates:
+            - Path=/api/v1/orders/**
+        - id: payment-service
+          uri: lb:http://PAYMENT-SERVICE
+          predicates:
+            - Path=/api/v1/payment/**
+        - id: ticket-service
+          uri: lb:http://TICKET-SERVICE
+          predicates:
+            - Path=/api/v1/tickets/**
+server:
+  port: ${GATEWAY_SERVER_PORT}
+
+eureka:
+  instance:
+    hostname: ${GATEWAY_SERVICE_CONTAINER_NAME}
+  client:
+    registerWithEureka: true
+    fetchRegistry: true

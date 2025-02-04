@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${PAYMENTDB_CONTAINER_NAME}:${POSTGRESDB_DOCKER_PORT}/${POSTGRESDB_PAYMENT_NAME}
+    username: ${POSTGRESDB_USER}
+    password: ${POSTGRESDB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate.ddl-auto: update
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: ${PAYMENT_SERVER_PORT}
+
+eureka:
+  instance:
+    hostname: ${PAYMENT_SERVICE_CONTAINER_NAME}
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
