@@ -26,3 +26,21 @@ eureka:
   client:
     registerWithEureka: true
     fetchRegistry: true
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    disable-swagger-default-url: true
+    path: /swagger-ui.html
+    config-url: /v3/api-docs/swagger-config
+    urls:
+      - url: /v3/api-docs
+        name: Gateway Service
+      - url: /api/v1/orders/v3/api-docs
+        name: Order Service
+      - url: /api/v1/payment/v3/api-docs
+        name: Payment Service
+      - url: /api/v1/tickets/v3/api-docs
+        name: Ticket Service

@@ -18,3 +18,12 @@ eureka:
   client:
     registerWithEureka: true
     fetchRegistry: true
+
+springdoc:
+  api-doc:
+    enable: true
+    path: /api/v1/payment/v3/api-docs
+  swagger-ui:
+    enable: true
+    disable-swagger-default-url: true
+    path: /api/v1/payment/swagger-ui.html
