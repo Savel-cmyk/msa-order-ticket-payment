@@ -20,7 +20,7 @@ eureka:
     fetchRegistry: true
 
 springdoc:
-  api-doc:
+  api-docs:
     enable: true
     path: /api/v1/payment/v3/api-docs
   swagger-ui:
