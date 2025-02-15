@@ -4,6 +4,8 @@ import com.travel.application.orderservice.dto.OrderRequestDto;
 import com.travel.application.orderservice.dto.OrderResponseDto;
 import com.travel.application.orderservice.dto.OrderWithoutDetailedTicketInfoResponseDto;
 import com.travel.application.orderservice.service.OrderService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,17 @@ public class OrderController {
      * @param order
      * @return Status code and result of info gathering (as ticket info is placed in another service) and mapping
      */
+    @Operation(
+            description = "Controller's POST method for creating order record (pseudo-booking) for requested ticket " +
+                    "with ticketId info in actual request and order data in DTO format.",
+            summary = "Book ticket by creating an order record.",
+            responses = {
+                    @ApiResponse(
+                            description = "Order creation was successful",
+                            responseCode = "201"
+                    )
+            }
+    )
     @PostMapping("/{ticketId}")
     public ResponseEntity<OrderWithoutDetailedTicketInfoResponseDto> addOrderForTicket(
             @PathVariable("ticketId") String ticketId,
