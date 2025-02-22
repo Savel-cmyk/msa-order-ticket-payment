@@ -2,7 +2,7 @@ package com.travel.application.orderservice.dto;
 
 
 public record OrderRequestDto(
-        String customerSNP,
+        CustomerDto customerDto,
         String number,
         String email
 ) {

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 @Service
 public class TicketMapper {
@@ -23,7 +24,7 @@ public class TicketMapper {
         String dateInAppropriateFormat = ticket.getDate().format(formatter);
 
         return new TicketResponseDto(
-                ticket.getTicketId(),
+                String.valueOf(ticket.getTicketId()),
                 //TODO: need to convert cost to an appropriate format with two zeroes after point
                 ticket.getCost().toString(),
                 dateInAppropriateFormat

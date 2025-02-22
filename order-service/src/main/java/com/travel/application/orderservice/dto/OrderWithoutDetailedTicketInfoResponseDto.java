@@ -2,9 +2,7 @@ package com.travel.application.orderservice.dto;
 
 public record OrderWithoutDetailedTicketInfoResponseDto(
         String orderId,
-        String customerSNP,
-        String number,
-        String email,
+        CustomerDto customerDto,
         String date,
         String ticketId
 ) {

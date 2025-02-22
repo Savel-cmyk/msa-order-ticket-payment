@@ -1,13 +1,12 @@
 package com.travel.application.paymentservice.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,7 +14,10 @@ import lombok.NoArgsConstructor;
 @Entity
 @Builder
 public class Payment {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
-    private int paymentId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+    private PaymentStatus status;
+    private UUID orderId;
 }

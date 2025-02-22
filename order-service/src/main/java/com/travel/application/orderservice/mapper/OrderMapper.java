@@ -5,13 +5,17 @@ import com.travel.application.orderservice.dto.OrderResponseDto;
 import com.travel.application.orderservice.dto.OrderWithoutDetailedTicketInfoResponseDto;
 import com.travel.application.orderservice.dto.TicketResponseDto;
 import com.travel.application.orderservice.model.Orders;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Service
+@RequiredArgsConstructor
 public class OrderMapper {
+
+    private final CustomerMapper customerMapper;
 
     /**
      * Method for mapping {@code Orders.class} object instance to DTO format with additional detailed info on ticket,
@@ -25,10 +29,8 @@ public class OrderMapper {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
 
         return new OrderResponseDto(
-                order.getOrderId(),
-                order.getCustomerSNP(),
-                order.getNumber(),
-                order.getEmail(),
+                String.valueOf(order.getOrderId()),
+                customerMapper.toCustomerDto(order.getCustomer()),
                 order.getDate().format(formatter),
                 ticketInfo
         );
@@ -45,31 +47,25 @@ public class OrderMapper {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
 
         return new OrderWithoutDetailedTicketInfoResponseDto(
-                order.getOrderId(),
-                order.getCustomerSNP(),
-                order.getNumber(),
-                order.getEmail(),
+                String.valueOf(order.getOrderId()),
+                customerMapper.toCustomerDto(order.getCustomer()),
                 order.getDate().format(formatter),
-                order.getTicketId()
+                String.valueOf(order.getTicketId())
         );
     }
 
     /**
      * Method for mapping order data in DTO format to order's entity format.
-     * @param orderRequest
      * @return order data in its entity format
      */
-    public Orders toOrder(OrderRequestDto orderRequest) {
+    public Orders toOrderDao() {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
         String dateInStringFormat = LocalDateTime.now().format(formatter);
         LocalDateTime localDateTime = LocalDateTime.parse(dateInStringFormat, formatter);
 
         return Orders.builder()
-                .customerSNP(orderRequest.customerSNP())
                 .date(localDateTime)
-                .email(orderRequest.email())
-                .number(orderRequest.number())
                 .build();
     }
 }

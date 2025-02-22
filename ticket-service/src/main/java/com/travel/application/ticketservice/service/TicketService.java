@@ -2,7 +2,7 @@ package com.travel.application.ticketservice.service;
 
 import com.travel.application.ticketservice.dto.TicketRequestDto;
 import com.travel.application.ticketservice.dto.TicketResponseDto;
-import com.travel.application.ticketservice.exception.NonExistingEntityRecordException;
+import com.travel.application.ticketservice.exception.RecordNotFoundException;
 import com.travel.application.ticketservice.mapper.TicketMapper;
 import com.travel.application.ticketservice.model.Ticket;
 import com.travel.application.ticketservice.repository.TicketRepository;
@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -26,9 +27,13 @@ public class TicketService {
      */
     public TicketResponseDto getTicketInfo(String ticketId) {
 
-        Ticket ticket = ticketRepository.findById(ticketId)
+        Ticket ticket = ticketRepository.findById(UUID.fromString(ticketId))
                 .orElseThrow(() ->
-                        new NonExistingEntityRecordException("Couldn't find ticket record with such id in database."));
+                        new RecordNotFoundException(
+                                "Couldn't find ticket record with such id in database.",
+                                Ticket.class.getTypeName()
+                        )
+                );
 
         return ticketMapper.toTicketResponseDto(ticket);
     }
