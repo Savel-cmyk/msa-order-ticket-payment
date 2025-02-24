@@ -8,6 +8,20 @@ spring:
     hibernate.ddl-auto: update
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+  kafka:
+    bootstrap-servers: ${KAFKA_CONTAINER_NAME}:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.type.mapping: exchangeDto:com.travel.application.paymentservice.dto.CustomerAccountExchangeDto
+    consumer:
+      group-id: payment-group
+      auto-offset-reset: latest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.json.trusted.packages: '*'
 
 server:
   port: ${PAYMENT_SERVER_PORT}

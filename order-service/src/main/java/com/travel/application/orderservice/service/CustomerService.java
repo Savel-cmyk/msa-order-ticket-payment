@@ -1,13 +1,17 @@
 package com.travel.application.orderservice.service;
 
+import com.travel.application.orderservice.dto.CustomerAccountExchangeDto;
 import com.travel.application.orderservice.dto.CustomerDto;
 import com.travel.application.orderservice.exception.RecordNotFoundException;
+import com.travel.application.orderservice.kafka.AccountRequestProducer;
+import com.travel.application.orderservice.kafka.AccountResponseConsumer;
 import com.travel.application.orderservice.mapper.CustomerMapper;
 import com.travel.application.orderservice.model.Customer;
 import com.travel.application.orderservice.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -15,6 +19,8 @@ public class CustomerService {
 
     private final CustomerMapper customerMapper;
     private final CustomerRepository customerRepository;
+    private final AccountRequestProducer accountRequestProducer;
+    private final AccountResponseConsumer accountResponseConsumer;
 
     /**
      * Service's method that maps received customer data in DTO format to DAO, saves mapped data
@@ -22,11 +28,23 @@ public class CustomerService {
      * @param customer customer data in DTO format
      * @return saved customer data in corresponding DTO format
      */
-    public CustomerDto createCustomer(CustomerDto customer) {
+    public CustomerDto addCustomer(CustomerDto customer) {
 
         Customer transientCustomer = customerMapper.toCustomerDao(customer);
-        Customer persistedCustomer = customerRepository.save(transientCustomer);
-        return customerMapper.toCustomerDto(persistedCustomer);
+        UUID customerId = UUID.randomUUID();
+        accountRequestProducer.produceAccountRequest(String.valueOf(customerId));
+
+        try {
+            CustomerAccountExchangeDto exchangeDto = accountResponseConsumer.getAccountId(String.valueOf(customerId))
+                    .get(5, TimeUnit.SECONDS);
+
+            transientCustomer.setId(customerId);
+            transientCustomer.setAccountId(UUID.fromString(exchangeDto.accountId()));
+            Customer persistedCustomer = customerRepository.save(transientCustomer);
+            return customerMapper.toCustomerDto(persistedCustomer);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     /**

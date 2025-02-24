@@ -53,6 +53,6 @@ public class OrderController {
     public ResponseEntity<OrderResponseDto> getOrderWithTicketInfo(
             @PathVariable("orderId") String orderId
     ) {
-        return new ResponseEntity<>(orderService.getOrderWithTicketInfo(orderId), HttpStatus.FOUND);
+        return new ResponseEntity<>(orderService.getOrderWithTicketInfo(orderId), HttpStatus.OK);
     }
 }

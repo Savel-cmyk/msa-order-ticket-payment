@@ -8,11 +8,11 @@ spring:
         - id: order-service
           uri: lb:http://ORDER-SERVICE
           predicates:
-            - Path=/api/v1/orders/**
+            - Path=/api/v1/orders/**,/api/v1/customer/**
         - id: payment-service
           uri: lb:http://PAYMENT-SERVICE
           predicates:
-            - Path=/api/v1/payment/**
+            - Path=/api/v1/payment/**,/api/v1/currency/**
         - id: ticket-service
           uri: lb:http://TICKET-SERVICE
           predicates:

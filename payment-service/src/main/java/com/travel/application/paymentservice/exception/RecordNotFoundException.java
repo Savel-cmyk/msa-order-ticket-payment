@@ -1,4 +1,4 @@
-package com.travel.application.orderservice.exception;
+package com.travel.application.paymentservice.exception;
 
 import lombok.Getter;
 
@@ -16,5 +16,4 @@ public class RecordNotFoundException extends RuntimeException {
         this.recordClassTypeName =
                 recordClassTypeName.split("[.]")[recordClassTypeName.split("[.]").length - 1];
     }
-
 }

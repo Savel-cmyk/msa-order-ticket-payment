@@ -5,6 +5,7 @@ import com.travel.application.orderservice.exception.TimeoutWhenWaitingForKafkaR
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -48,6 +49,23 @@ public class ControllerExceptionHandler {
         Map<String, String> errors = new HashMap<>();
         errors.put("Kafka Broker", exception.getMessage());
         return new ResponseEntity<>(errors, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    /**
+     * Method for AOP exception handling of type {@code MethodArgumentNotValidException.class}
+     *
+     * @param exception thrown exception
+     * @return field names with violated fields values
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException exception
+    ) {
+
+        Map<String, String> errors = new HashMap<>();
+        exception.getBindingResult().getFieldErrors().forEach(fieldError ->
+                errors.put(fieldError.getField(), fieldError.getDefaultMessage()));
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
     /**

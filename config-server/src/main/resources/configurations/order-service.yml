@@ -28,7 +28,7 @@ spring:
 #                class: org.springframework.kafka.support.serializer.JsonDeserializer
         spring.json:
           trusted.packages: '*'
-          type.mapping: ticketResponseDto:com.travel.application.orderservice.dto.TicketResponseDto
+          type.mapping: ticketResponseDto:com.travel.application.orderservice.dto.TicketResponseDto,exchangeDto:com.travel.application.orderservice.dto.CustomerAccountExchangeDto
 
 logging:
   config: classpath:logback-spring.xml

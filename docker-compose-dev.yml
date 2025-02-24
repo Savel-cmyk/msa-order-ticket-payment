@@ -148,6 +148,8 @@ services:
         condition: service_healthy
       payment_db:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "sh", "-c", "curl --fail --silent http://localhost:${PAYMENT_SERVER_PORT}/actuator/health | grep 'UP'" ]
       interval: 10s
@@ -192,7 +194,7 @@ services:
     depends_on:
       gateway-service:
         condition: service_healthy
-      orders_db:
+      tickets_db:
         condition: service_healthy
       kafka:
         condition: service_healthy
@@ -237,7 +239,7 @@ services:
       - microservices-net
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.2
+    image: elastic/elasticsearch:7.16.2
     environment:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
