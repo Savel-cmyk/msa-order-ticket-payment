@@ -15,29 +15,6 @@ public class CurrencyService {
     private final CurrencyMapper currencyMapper;
     private final CurrencyRepository currencyRepository;
 
-//    @PostConstruct
-//    private void postConstruct() {
-//
-//        currencyRepository.save(Currency.builder()
-//                .id(1L)
-//                .name("RUB")
-//                .exchangeRate(1.0)
-//                .description("Russian ruble")
-//                .build());
-//        currencyRepository.save(Currency.builder()
-//                .id(2L)
-//                .name("USD")
-//                .exchangeRate(88.45)
-//                .description("USA dollar")
-//                .build());
-//        currencyRepository.save(Currency.builder()
-//                .id(3L)
-//                .name("EUR")
-//                .exchangeRate(95.04)
-//                .description("European euro")
-//                .build());
-//    }
-
     /**
      * Method for persisting requested data to DB
      *
