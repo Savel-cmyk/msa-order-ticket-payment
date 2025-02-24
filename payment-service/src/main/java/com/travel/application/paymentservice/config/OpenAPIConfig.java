@@ -14,15 +14,13 @@ import java.util.List;
 @Configuration
 public class OpenAPIConfig {
 
-    @Value("${GATEWAY_SERVICE_CONTAINER_NAME}")
-    private String name;
     @Value("${GATEWAY_SERVER_PORT}")
     private String port;
 
     @Bean
     public OpenAPI paymentServiceAPI() {
         return new OpenAPI()
-                .servers(List.of(new Server().url("http://" + name + ":" + port)))
+                .servers(List.of(new Server().url("http://localhost:" + port)))
                 .info(new Info()
                         .title("Payment service API")
                         .version("v0.0.1"));

@@ -16,13 +16,11 @@ public class OpenAPIConfig {
 
     @Value("${GATEWAY_SERVER_PORT}")
     private String port;
-    @Value("${GATEWAY_SERVICE_CONTAINER_NAME}")
-    private String name;
 
     @Bean
     public OpenAPI orderServiceAPI() {
         return new OpenAPI()
-                .servers(List.of(new Server().url("http://" + name + ":" + port)))
+                .servers(List.of(new Server().url("http://localhost:" + port)))
                 .info(new Info()
                         .title("Order service API")
                         .version("v0.0.1"));

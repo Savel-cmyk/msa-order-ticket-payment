@@ -13,7 +13,8 @@ public class RecordNotFoundException extends RuntimeException {
 
     public RecordNotFoundException(String message, String recordClassTypeName) {
         super(message);
-        this.recordClassTypeName = recordClassTypeName;
+        this.recordClassTypeName =
+                recordClassTypeName.split("[.]")[recordClassTypeName.split("[.]").length - 1];
     }
 
 }
