@@ -20,9 +20,7 @@ public class Orders {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID orderId;
-    @OneToOne
-    @JoinColumn(name = "customer_id", referencedColumnName = "id")
-    private Customer customer;
+    private UUID customerId;
     private LocalDateTime date;
     private UUID paymentId;
     private UUID ticketId;

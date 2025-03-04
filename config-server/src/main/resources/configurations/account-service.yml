@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${ACCOUNTSDB_CONTAINER_NAME}:${POSTGRESDB_DOCKER_PORT}/${POSTGRESDB_ACCOUNTS_NAME}
+    username: ${POSTGRESDB_USER}
+    password: ${POSTGRESDB_PASSWORD}
+    driverClassName: org.postgresql.Driver
+  jpa:
+    hibernate.ddlAuto: update
+    database: postgresql
+    databasePlatform: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: ${ACCOUNT_SERVER_PORT}
+
+eureka:
+  instance:
+    hostname: ${ACCOUNT_SERVICE_CONTAINER_NAME}
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api/v1/accounts/v3/api-docs
+  swagger-ui:
+    enabled: true
+    disable-swagger-default-url: true
+    path: /api/v1/accounts/swagger-ui.html

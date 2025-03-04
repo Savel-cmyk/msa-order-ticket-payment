@@ -1,6 +1,5 @@
 package com.travel.application.orderservice.mapper;
 
-import com.travel.application.orderservice.dto.OrderRequestDto;
 import com.travel.application.orderservice.dto.OrderResponseDto;
 import com.travel.application.orderservice.dto.OrderWithoutDetailedTicketInfoResponseDto;
 import com.travel.application.orderservice.dto.TicketResponseDto;
@@ -15,8 +14,6 @@ import java.time.format.DateTimeFormatter;
 @RequiredArgsConstructor
 public class OrderMapper {
 
-    private final CustomerMapper customerMapper;
-
     /**
      * Method for mapping {@code Orders.class} object instance to DTO format with additional detailed info on ticket,
      * that is being booked by this order.
@@ -30,7 +27,6 @@ public class OrderMapper {
 
         return new OrderResponseDto(
                 String.valueOf(order.getOrderId()),
-                customerMapper.toCustomerDto(order.getCustomer()),
                 order.getDate().format(formatter),
                 ticketInfo
         );
@@ -48,7 +44,6 @@ public class OrderMapper {
 
         return new OrderWithoutDetailedTicketInfoResponseDto(
                 String.valueOf(order.getOrderId()),
-                customerMapper.toCustomerDto(order.getCustomer()),
                 order.getDate().format(formatter),
                 String.valueOf(order.getTicketId())
         );

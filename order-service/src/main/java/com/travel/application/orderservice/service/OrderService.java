@@ -8,9 +8,7 @@ import com.travel.application.orderservice.exception.TimeoutWhenWaitingForKafkaR
 import com.travel.application.orderservice.kafka.TicketRequestProducer;
 import com.travel.application.orderservice.kafka.TicketResponseConsumer;
 import com.travel.application.orderservice.mapper.OrderMapper;
-import com.travel.application.orderservice.model.Customer;
 import com.travel.application.orderservice.model.Orders;
-import com.travel.application.orderservice.repository.CustomerRepository;
 import com.travel.application.orderservice.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,7 +25,6 @@ public class OrderService {
     private final TicketResponseConsumer ticketResponseConsumer;
     private final TicketRequestProducer ticketRequestProducer;
     private final OrderRepository orderRepository;
-    private final CustomerRepository customerRepository;
 
     /**
      * Service's method that sends request through message broker for ticket info,
@@ -65,21 +62,14 @@ public class OrderService {
      * mapped data and returning saved data in DTO format.
      *
      * @param ticketId
-     * @param customerId
      * @return order data with ticket ID in an appropriate format
      */
     public OrderWithoutDetailedTicketInfoResponseDto addOrderForTicket(
-            String ticketId,
-            String customerId
+            String ticketId
     ) {
 
         Orders orderEntity = orderMapper.toOrderDao();
         orderEntity.setTicketId(UUID.fromString(ticketId));
-        orderEntity.setCustomer(
-                customerRepository.findById(UUID.fromString(customerId))
-                        .orElseThrow(() -> new RecordNotFoundException("No customer record that corresponds to " +
-                                "requested id has been found", Customer.class.getName()))
-        );
         Orders persistedOrder = orderRepository.save(orderEntity);
         return orderMapper.toOrderWithoutDetailedTicketInfoResponseDto(persistedOrder);
     }

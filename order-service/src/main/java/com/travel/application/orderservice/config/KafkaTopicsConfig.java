@@ -14,11 +14,4 @@ public class KafkaTopicsConfig {
                 .name("order-topic")
                 .build();
     }
-
-    @Bean
-    public NewTopic customerTopic() {
-        return TopicBuilder
-                .name("customer-topic")
-                .build();
-    }
 }

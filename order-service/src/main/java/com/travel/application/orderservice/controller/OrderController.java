@@ -21,8 +21,7 @@ public class OrderController {
     /**
      * Controller's POST method for creating order record (pseudo-booking) for requested ticket with ticketId info in
      * actual request and order data in DTO format.
-     * @param ticketId
-     * @param customerId
+     * @param ticketId requested ticket's unique identifier
      * @return Status code and result of info gathering (as ticket info is placed in another service) and mapping
      */
     @Operation(
@@ -36,17 +35,16 @@ public class OrderController {
                     )
             }
     )
-    @PostMapping("/{ticketId}/{customerId}")
+    @PostMapping("/{ticketId}")
     public ResponseEntity<OrderWithoutDetailedTicketInfoResponseDto> addOrderForTicket(
-            @PathVariable("ticketId") String ticketId,
-            @PathVariable("customerId") String customerId
+            @PathVariable("ticketId") String ticketId
     ) {
-        return new ResponseEntity<>(orderService.addOrderForTicket(ticketId, customerId), HttpStatus.CREATED);
+        return new ResponseEntity<>(orderService.addOrderForTicket(ticketId), HttpStatus.CREATED);
     }
 
     /**
      * Get method for receiving the info on requested orderId from DB.
-     * @param orderId
+     * @param orderId requested order's unique identifier
      * @return Status code and result of info gathering
      */
     @GetMapping("/{orderId}")

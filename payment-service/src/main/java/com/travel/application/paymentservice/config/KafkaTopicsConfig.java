@@ -13,9 +13,9 @@ import org.springframework.kafka.config.TopicBuilder;
 public class KafkaTopicsConfig {
 
     @Bean
-    public NewTopic accountTopic() {
+    public NewTopic paymentTopic() {
         return TopicBuilder
-                .name("account-topic")
+                .name("payment-topic")
                 .build();
     }
 }
