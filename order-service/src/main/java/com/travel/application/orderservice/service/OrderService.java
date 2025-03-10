@@ -90,9 +90,4 @@ public class OrderService {
             throw new RuntimeException(e.getMessage());
         }
     }
-
-    public void checkIfKafkaPartitionsWork() {
-
-        ticketBookingRequestProducer.produceCheck(new TicketBookingRequestDto(String.valueOf(UUID.randomUUID()), String.valueOf(UUID.randomUUID())));
-    }
 }

@@ -296,7 +296,6 @@ networks:
 
 volumes:
   pg_data_orders:
-  pg_data_payment:
   pg_data_tickets:
   pg_data_accounts:
   es_data:

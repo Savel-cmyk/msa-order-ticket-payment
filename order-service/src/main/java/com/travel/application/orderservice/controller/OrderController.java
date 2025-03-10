@@ -54,11 +54,4 @@ public class OrderController {
     ) {
         return new ResponseEntity<>(orderService.getOrderWithTicketInfo(orderId), HttpStatus.OK);
     }
-
-    @GetMapping("/check")
-    public ResponseEntity<?> checkIfKafkaPartitionsWork() {
-
-        orderService.checkIfKafkaPartitionsWork();
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
 }

@@ -29,15 +29,4 @@ public class TicketBookingRequestProducer {
 
         kafkaTemplate.send(message);
     }
-
-    public void produceCheck(TicketBookingRequestDto ticketBookingRequest) {
-
-        Message<TicketBookingRequestDto> message = MessageBuilder
-                .withPayload(ticketBookingRequest)
-                .setHeader(KafkaHeaders.TOPIC, "order-topic")
-                .setHeader(KafkaHeaders.PARTITION, 1)
-                .build();
-
-        kafkaTemplate.send(message);
-    }
 }
