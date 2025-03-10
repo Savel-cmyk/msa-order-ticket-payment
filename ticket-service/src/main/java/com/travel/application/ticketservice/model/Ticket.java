@@ -24,5 +24,6 @@ public class Ticket {
     private UUID ticketId;
     private Long attractionId;
     private Double cost;
+    private TicketStatus status;
     private LocalDateTime date;
 }

@@ -2,6 +2,7 @@ package com.travel.application.accountservice.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Version;
 
 import java.util.UUID;
 
@@ -20,4 +21,6 @@ public class Account {
     @JoinColumn(name = "currency_id",referencedColumnName = "id")
     @ToString.Exclude
     private Currency currency;
+    @Version
+    private Long version;
 }

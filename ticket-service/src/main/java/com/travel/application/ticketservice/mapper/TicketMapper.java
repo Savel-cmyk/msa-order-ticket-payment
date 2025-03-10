@@ -1,19 +1,24 @@
 package com.travel.application.ticketservice.mapper;
 
+import com.travel.application.ticketservice.dto.TicketBookingDtoTemplate;
+import com.travel.application.ticketservice.dto.impl.TicketBookingRequestDto;
+import com.travel.application.ticketservice.dto.impl.TicketBookingResponseDto;
 import com.travel.application.ticketservice.dto.TicketRequestDto;
 import com.travel.application.ticketservice.dto.TicketResponseDto;
+import com.travel.application.ticketservice.dto.impl.TicketPaymentRequestDto;
 import com.travel.application.ticketservice.model.Ticket;
+import com.travel.application.ticketservice.model.TicketStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.UUID;
 
 @Service
 public class TicketMapper {
 
     /**
      * Method for ticket conversion to DTO format.
+     *
      * @param ticket
      * @return ticket data in DTO format
      */
@@ -33,6 +38,7 @@ public class TicketMapper {
 
     /**
      * Method for DTO format conversion with ticket data to entity class format.
+     *
      * @param ticketRequest
      * @return ticket data as an entity object
      */
@@ -44,7 +50,49 @@ public class TicketMapper {
         return Ticket.builder()
                 .attractionId(Long.parseLong(ticketRequest.attractionId()))
                 .cost(Double.parseDouble(ticketRequest.cost()))
+                .status(TicketStatus.AVAILABLE)
                 .date(localDateTime)
                 .build();
+    }
+
+    /**
+     *
+     *
+     * @param ticketBookingDto
+     * @param ticketStatus
+     * @param ticketId
+     * @return
+     */
+    public TicketBookingResponseDto toTicketBookingDto(
+            TicketBookingDtoTemplate ticketBookingDto,
+            String ticketStatus,
+            String ticketId
+    ) {
+        return new TicketBookingResponseDto(
+                ticketBookingDto.orderId(),
+                ticketStatus,
+                ticketId
+        );
+    }
+
+    /**
+     *
+     *
+     * @param ticketBookingRequest
+     * @param ticketCost
+     * @param ticketId
+     * @return
+     */
+    public TicketPaymentRequestDto toTicketBookingDto(
+            TicketBookingRequestDto ticketBookingRequest,
+            Double ticketCost,
+            String ticketId
+    ) {
+        return new TicketPaymentRequestDto(
+                ticketBookingRequest.orderId(),
+                ticketCost.toString(),
+                ticketBookingRequest.customerId(),
+                ticketId
+        );
     }
 }

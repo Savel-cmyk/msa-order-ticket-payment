@@ -1,12 +1,17 @@
 package com.travel.application.accountservice.service;
 
 import com.travel.application.accountservice.dto.CustomerDto;
+import com.travel.application.accountservice.dto.TicketPaymentRequestDto;
+import com.travel.application.accountservice.dto.TicketPaymentResponseDto;
 import com.travel.application.accountservice.exception.RecordNotFoundException;
+import com.travel.application.accountservice.model.Account;
 import com.travel.application.accountservice.model.Customer;
 import com.travel.application.accountservice.mapper.CustomerMapper;
+import com.travel.application.accountservice.repository.AccountRepository;
 import com.travel.application.accountservice.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -17,6 +22,7 @@ public class CustomerService {
     private final CustomerMapper customerMapper;
     private final CustomerRepository customerRepository;
     private final AccountService accountService;
+    private final AccountRepository accountRepository;
 
     /**
      * Service's method that maps received customer data in DTO format to DAO, saves mapped data
@@ -48,5 +54,39 @@ public class CustomerService {
                         Customer.class.getName()
                 ));
         return customerMapper.toCustomerDto(persistedCustomer);
+    }
+
+    /**
+     * Method for handling ticket booking process
+     *
+     * @param ticketPaymentRequest info that is required for producing transaction
+     */
+    @Transactional
+    public TicketPaymentResponseDto payForTicket(TicketPaymentRequestDto ticketPaymentRequest) {
+
+        Customer customerToPay = customerRepository
+                .findById(UUID.fromString(ticketPaymentRequest.customerId()))
+                .orElseThrow(() -> new RecordNotFoundException(
+                        "No customer record with requested id found",
+                        Customer.class.getName()
+                ));
+        Account customerAccount = customerToPay.getAccount();
+
+        TicketPaymentResponseDto ticketPaymentResponse;
+        if (accountRepository.withdrawIfEnough(Double.valueOf(ticketPaymentRequest.cost()), customerAccount.getId()) > 0) {
+
+            ticketPaymentResponse = new TicketPaymentResponseDto(
+                    ticketPaymentRequest.orderId(),
+                    "BOOKED",
+                    ticketPaymentRequest.ticketId()
+            );
+        } else {
+            ticketPaymentResponse = new TicketPaymentResponseDto(
+                    ticketPaymentRequest.orderId(),
+                    "PAYMENT_FAILED",
+                    ticketPaymentRequest.ticketId()
+            );
+        }
+        return ticketPaymentResponse;
     }
 }

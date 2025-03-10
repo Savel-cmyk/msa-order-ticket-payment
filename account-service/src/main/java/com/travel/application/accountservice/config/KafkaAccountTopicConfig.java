@@ -1,4 +1,4 @@
-package com.travel.application.orderservice.config;
+package com.travel.application.accountservice.config;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.context.annotation.Bean;
@@ -6,13 +6,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
 
 @Configuration
-public class KafkaTopicsConfig {
+public class KafkaAccountTopicConfig {
 
     @Bean
-    public NewTopic orderTopic() {
+    public NewTopic ticketTopic() {
         return TopicBuilder
-                .name("order-topic")
-                .partitions(2)
+                .name("account-topic")
+                .partitions(1)
                 .build();
     }
 }

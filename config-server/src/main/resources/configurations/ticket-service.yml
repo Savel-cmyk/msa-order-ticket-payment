@@ -15,14 +15,16 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
-        spring.json.type.mapping: ticketResponseDto:com.travel.application.ticketservice.dto.TicketResponseDto
+        spring.json.type.mapping: ticketBookingResponseDto:com.travel.application.ticketservice.dto.impl.TicketBookingResponseDto,ticketPaymentRequestDto:com.travel.application.ticketservice.dto.impl.TicketPaymentRequestDto,ticketResponseDto:com.travel.application.ticketservice.dto.TicketResponseDto
     consumer:
       group-id: ticket-group
       auto-offset-reset: latest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: '*'
+        spring.json:
+          trusted.packages: '*'
+          type.mapping: ticketInfoRequest:com.travel.application.ticketservice.dto.TicketInfoRequestDto,ticketPaymentResponse:com.travel.application.ticketservice.dto.impl.TicketBookingResponseDto,ticketBookingRequest:com.travel.application.ticketservice.dto.impl.TicketBookingRequestDto
 
 server:
   port: ${TICKET_SERVER_PORT}

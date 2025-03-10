@@ -22,6 +22,6 @@ public class Orders {
     private UUID orderId;
     private UUID customerId;
     private LocalDateTime date;
-    private UUID paymentId;
+    private OrderStatus status;
     private UUID ticketId;
 }

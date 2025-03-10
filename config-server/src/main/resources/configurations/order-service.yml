@@ -12,7 +12,9 @@ spring:
     bootstrapServers: ${KAFKA_CONTAINER_NAME}:9092
     producer:
       keySerializer: org.apache.kafka.common.serialization.StringSerializer
-      valueSerializer: org.apache.kafka.common.serialization.StringSerializer
+      valueSerializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.type.mapping: ticketInfoRequest:com.travel.application.orderservice.dto.TicketInfoRequestDto,ticketBookingRequest:com.travel.application.orderservice.dto.TicketBookingRequestDto
     consumer:
       groupId: order-group
       autoOffsetReset: earliest
@@ -28,7 +30,7 @@ spring:
 #                class: org.springframework.kafka.support.serializer.JsonDeserializer
         spring.json:
           trusted.packages: '*'
-          type.mapping: ticketResponseDto:com.travel.application.orderservice.dto.TicketResponseDto
+          type.mapping: ticketBookingResponseDto:com.travel.application.orderservice.dto.TicketBookingResponseDto,ticketResponseDto:com.travel.application.orderservice.dto.TicketResponseDto
 
 logging:
   config: classpath:logback-spring.xml
