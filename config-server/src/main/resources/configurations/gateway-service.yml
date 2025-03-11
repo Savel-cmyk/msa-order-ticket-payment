@@ -9,14 +9,14 @@ spring:
           uri: lb:http://ORDER-SERVICE
           predicates:
             - Path=/api/v1/orders/**
-        - id: payment-service
-          uri: lb:http://PAYMENT-SERVICE
-          predicates:
-            - Path=/api/v1/payment/**
         - id: ticket-service
           uri: lb:http://TICKET-SERVICE
           predicates:
             - Path=/api/v1/tickets/**
+        - id: account-service
+          uri: lb:http://ACCOUNT-SERVICE
+          predicates:
+            - Path=/api/v1/accounts/v3/api-docs,/api/v1/customer/**,/api/v1/currency/**
 server:
   port: ${GATEWAY_SERVER_PORT}
 
@@ -40,7 +40,7 @@ springdoc:
         name: Gateway Service
       - url: /api/v1/orders/v3/api-docs
         name: Order Service
-      - url: /api/v1/payment/v3/api-docs
-        name: Payment Service
       - url: /api/v1/tickets/v3/api-docs
         name: Ticket Service
+      - url: /api/v1/accounts/v3/api-docs
+        name: Account Service

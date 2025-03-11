@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,10 +18,12 @@ import java.time.LocalDateTime;
 @Entity
 @Builder
 public class Ticket {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String ticketId;
+    private UUID ticketId;
     private Long attractionId;
     private Double cost;
+    private TicketStatus status;
     private LocalDateTime date;
 }

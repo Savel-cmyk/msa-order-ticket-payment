@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: account-service
+  config:
+    import: configserver:http://${CONFIG_SERVER_CONTAINER_NAME}:${CONFIG_SERVER_PORT}
+  cloud:
+    config:
+      fail-fast: true
+  liquibase:
+    enabled: false

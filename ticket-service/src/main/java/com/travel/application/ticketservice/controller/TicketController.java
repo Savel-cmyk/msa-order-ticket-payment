@@ -35,6 +35,6 @@ public class TicketController {
      */
     @GetMapping
     public ResponseEntity<List<TicketResponseDto>> getTicket() {
-        return new ResponseEntity<>(ticketService.getAllTickets(), HttpStatus.FOUND);
+        return new ResponseEntity<>(ticketService.getAllTickets(), HttpStatus.OK);
     }
 }

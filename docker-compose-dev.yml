@@ -59,6 +59,54 @@ services:
       retries: 3
       start_period: 30s
 
+  accounts_db:
+    image: postgres
+    env_file:
+      - .env
+    container_name: ${ACCOUNTSDB_CONTAINER_NAME}
+    environment:
+      POSTGRES_USER: ${POSTGRESDB_USER}
+      POSTGRES_PASSWORD: ${POSTGRESDB_PASSWORD}
+      POSTGRES_DB: ${POSTGRESDB_ACCOUNTS_NAME}
+    volumes:
+      - pg_data_accounts:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRESDB_ACCOUNTS_PORT}:${POSTGRESDB_DOCKER_PORT}"
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRESDB_USER} -d ${POSTGRESDB_ACCOUNTS_NAME}'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
+  account-service:
+    build:
+      context: ./account-service
+      dockerfile: ./Dockerfile
+    env_file:
+      - .env
+    container_name: ${ACCOUNT_SERVICE_CONTAINER_NAME}
+    ports:
+      - "${ACCOUNT_SERVER_PORT}:${ACCOUNT_SERVER_PORT}"
+    networks:
+      - microservices-net
+    depends_on:
+      gateway-service:
+        condition: service_healthy
+      accounts_db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "sh", "-c", "curl --fail --silent http://localhost:${ACCOUNT_SERVER_PORT}/actuator/health | grep 'UP'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
   orders_db:
     image: postgres
     env_file:
@@ -109,52 +157,6 @@ services:
       retries: 3
       start_period: 30s
 
-  payment_db:
-    image: postgres
-    env_file:
-      - .env
-    container_name: ${PAYMENTDB_CONTAINER_NAME}
-    environment:
-      POSTGRES_USER: ${POSTGRESDB_USER}
-      POSTGRES_PASSWORD: ${POSTGRESDB_PASSWORD}
-      POSTGRES_DB: ${POSTGRESDB_PAYMENT_NAME}
-    volumes:
-      - pg_data_payment:/var/lib/postgresql/data
-    ports:
-      - "${POSTGRESDB_PAYMENT_PORT}:${POSTGRESDB_DOCKER_PORT}"
-    healthcheck:
-      test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRESDB_USER} -d ${POSTGRESDB_PAYMENT_NAME}'" ]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-    networks:
-      - microservices-net
-    restart: unless-stopped
-
-  payment-service:
-    build:
-      context: ./payment-service
-      dockerfile: ./Dockerfile
-    env_file:
-      - .env
-    container_name: ${PAYMENT_SERVICE_CONTAINER_NAME}
-    ports:
-      - "${PAYMENT_SERVER_PORT}:${PAYMENT_SERVER_PORT}"
-    networks:
-      - microservices-net
-    depends_on:
-      gateway-service:
-        condition: service_healthy
-      payment_db:
-        condition: service_healthy
-    healthcheck:
-      test: [ "CMD", "sh", "-c", "curl --fail --silent http://localhost:${PAYMENT_SERVER_PORT}/actuator/health | grep 'UP'" ]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
-
   tickets_db:
     image: postgres
     env_file:
@@ -192,7 +194,7 @@ services:
     depends_on:
       gateway-service:
         condition: service_healthy
-      orders_db:
+      tickets_db:
         condition: service_healthy
       kafka:
         condition: service_healthy
@@ -237,7 +239,7 @@ services:
       - microservices-net
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.2
+    image: elastic/elasticsearch:7.16.2
     environment:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
@@ -294,6 +296,6 @@ networks:
 
 volumes:
   pg_data_orders:
-  pg_data_payment:
   pg_data_tickets:
+  pg_data_accounts:
   es_data:

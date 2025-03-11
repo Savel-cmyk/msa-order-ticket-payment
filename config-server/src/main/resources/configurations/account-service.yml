@@ -1,0 +1,45 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${ACCOUNTSDB_CONTAINER_NAME}:${POSTGRESDB_DOCKER_PORT}/${POSTGRESDB_ACCOUNTS_NAME}
+    username: ${POSTGRESDB_USER}
+    password: ${POSTGRESDB_PASSWORD}
+    driverClassName: org.postgresql.Driver
+  jpa:
+    hibernate.ddlAuto: update
+    database: postgresql
+    databasePlatform: org.hibernate.dialect.PostgreSQLDialect
+  kafka:
+    bootstrap-servers: ${KAFKA_CONTAINER_NAME}:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.type.mapping: ticketPaymentResponse:com.travel.application.accountservice.dto.TicketPaymentResponseDto
+    consumer:
+      group-id: account-group
+      auto-offset-reset: latest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json:
+          trusted.packages: '*'
+          type.mapping: ticketPaymentRequestDto:com.travel.application.accountservice.dto.TicketPaymentRequestDto
+
+server:
+  port: ${ACCOUNT_SERVER_PORT}
+
+eureka:
+  instance:
+    hostname: ${ACCOUNT_SERVICE_CONTAINER_NAME}
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api/v1/accounts/v3/api-docs
+  swagger-ui:
+    enabled: true
+    disable-swagger-default-url: true
+    path: /api/v1/accounts/swagger-ui.html

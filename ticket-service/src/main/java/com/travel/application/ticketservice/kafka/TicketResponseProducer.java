@@ -16,6 +16,7 @@ public class TicketResponseProducer {
 
     /**
      * Method for sending message to broker on requested ticket data to ticket-service topic.
+     *
      * @param ticketResponseDto
      */
     public void produceTicketResponse(TicketResponseDto ticketResponseDto) {
@@ -23,6 +24,7 @@ public class TicketResponseProducer {
         Message<TicketResponseDto> message = MessageBuilder
                 .withPayload(ticketResponseDto)
                 .setHeader(KafkaHeaders.TOPIC, "ticket-topic")
+                .setHeader(KafkaHeaders.PARTITION, 0)
                 .build();
 
         kafkaTemplate.send(message);

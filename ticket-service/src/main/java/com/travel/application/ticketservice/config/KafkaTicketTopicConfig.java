@@ -12,6 +12,7 @@ public class KafkaTicketTopicConfig {
     public NewTopic ticketTopic() {
         return TopicBuilder
                 .name("ticket-topic")
+                .partitions(3)
                 .build();
     }
 }
