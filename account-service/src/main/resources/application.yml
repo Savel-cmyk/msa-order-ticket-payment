@@ -8,3 +8,8 @@ spring:
       fail-fast: true
   liquibase:
     enabled: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwkSetUri: http://${KEYCLOAK_HOST_NAME}:8080/realms/demo/protocol/openid-connect/certs

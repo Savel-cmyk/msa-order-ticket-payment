@@ -22,6 +22,8 @@ public class Customer {
     private String surname;
     private String name;
     private String patronymic;
+    private String username;
+    private String hashedPassword;
     private String email;
     private String phoneNumber;
     @OneToOne

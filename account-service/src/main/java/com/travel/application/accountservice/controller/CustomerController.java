@@ -5,6 +5,10 @@ import com.travel.application.accountservice.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -38,11 +42,20 @@ public class CustomerController {
      * @param customerId customer's unique identifier to retrieve from DB
      * @return customer's data that corresponds to requested unique identifier and 200 status code in case of success
      */
+    @PreAuthorize("hasAuthority('SCOPE_TEST')")
     @GetMapping("/{customerId}")
     public ResponseEntity<CustomerDto> getCustomerById(
             @PathVariable("customerId") String customerId
     ) {
         CustomerDto persistedCustomer = customerService.getCustomerById(customerId);
         return new ResponseEntity<>(persistedCustomer, HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_TEST')")
+    @GetMapping("/ping")
+    public String ping() {
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication authentication = context.getAuthentication();
+        return "Scopes: " + authentication.getAuthorities();
     }
 }

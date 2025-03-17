@@ -1,4 +1,9 @@
 spring:
+#  security:
+#    oauth2:
+#      resourceserver:
+#        jwt:
+#          issuerUri: "http://${KEYCLOAK_CONTAINER_NAME}:${KEYCLOAK_PORT}/realms/msa-order-ticket-payment"
   cloud:
     gateway:
       discovery:
@@ -16,7 +21,7 @@ spring:
         - id: account-service
           uri: lb:http://ACCOUNT-SERVICE
           predicates:
-            - Path=/api/v1/accounts/v3/api-docs,/api/v1/customer/**,/api/v1/currency/**
+            - Path=/api/v1/accounts/v3/api-docs**,/api/v1/accounts/swagger-ui**,/api/v1/customer/**,/api/v1/currency/**
 server:
   port: ${GATEWAY_SERVER_PORT}
 

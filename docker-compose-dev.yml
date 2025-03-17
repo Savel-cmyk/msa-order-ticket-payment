@@ -47,6 +47,11 @@ services:
     container_name: ${GATEWAY_SERVICE_CONTAINER_NAME}
     ports:
       - "${GATEWAY_SERVER_PORT}:${GATEWAY_SERVER_PORT}"
+    environment:
+#      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=TRACE
+      - TZ=Europe/Moscow
+#      - OIDC_ISSUER_URI=http://${KEYCLOAK_CONTAINER_NAME}:8080/realms/demo
+      - OIDC_ISSUER_URI_OUTER=http://keycloak.server.com:8080/realms/demo
     networks:
       - microservices-net
     depends_on:
@@ -204,6 +209,40 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
+
+  keycloak-server:
+    image: quay.io/keycloak/keycloak:23.0.7
+    container_name: ${KEYCLOAK_CONTAINER_NAME}
+    ports:
+      - 8080:8080
+    env_file:
+      - .env
+    volumes:
+      - ./realm-export.json:/opt/keycloak/data/import/msa-order-ticket-payment.json
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      TZ: "Europe/Moscow"
+      KEYCLOAK_FRONTEND_URL: http://keycloak-server:8080
+#      KC_HOSTNAME: localhost
+#      KC_HOSTNAME_PORT: 8080
+#      KC_HOSTNAME_STRICT_BACKCHANNEL: false
+#      KC_HTTP_ENABLED: true
+#      KC_HOSTNAME_STRICT_HTTPS: false
+#      KC_HEALTH_ENABLED: true
+#      DB_VENDOR: postgres
+#      DB_ADDR: ${ACCOUNTSDB_CONTAINER_NAME}
+#      DB_PORT: ${POSTGRESDB_ACCOUNTS_PORT}
+#      DB_DATABASE: ${POSTGRESDB_ACCOUNTS_NAME}
+#      DB_USER: ${POSTGRESDB_USER}
+#      DB_PASSWORD: ${POSTGRESDB_PASSWORD}
+    networks:
+      microservices-net:
+        aliases:
+          - keycloak.server.com
+    command:
+      - "start-dev"
+      - "--import-realm"
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
