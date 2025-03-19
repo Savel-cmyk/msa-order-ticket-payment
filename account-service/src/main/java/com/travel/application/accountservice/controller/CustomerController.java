@@ -28,6 +28,7 @@ public class CustomerController {
      * @param customerDto requested data in DTO format to store
      * @return saved customer data in DTO format with 201 status code
      */
+    @PreAuthorize("hasRole('admin')")
     @PostMapping
     public ResponseEntity<CustomerDto> addCustomer(
             @RequestBody CustomerDto customerDto
@@ -42,7 +43,7 @@ public class CustomerController {
      * @param customerId customer's unique identifier to retrieve from DB
      * @return customer's data that corresponds to requested unique identifier and 200 status code in case of success
      */
-    @PreAuthorize("hasAuthority('SCOPE_TEST')")
+    @PreAuthorize("hasRole('customer')")
     @GetMapping("/{customerId}")
     public ResponseEntity<CustomerDto> getCustomerById(
             @PathVariable("customerId") String customerId
@@ -51,7 +52,7 @@ public class CustomerController {
         return new ResponseEntity<>(persistedCustomer, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAuthority('SCOPE_TEST')")
+    @PreAuthorize("hasRole('admin')")
     @GetMapping("/ping")
     public String ping() {
         SecurityContext context = SecurityContextHolder.getContext();

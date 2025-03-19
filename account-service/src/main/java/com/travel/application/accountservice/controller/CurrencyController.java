@@ -5,6 +5,7 @@ import com.travel.application.accountservice.dto.CurrencyDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,6 +22,7 @@ public class CurrencyController {
      * @return response in JSON format containing persisted currency data in DTO format
      * and status code 201 in case of success
      */
+    @PreAuthorize("hasRole('admin')")
     @PostMapping
     public ResponseEntity<CurrencyDto> addCurrencyType(
             @RequestBody CurrencyDto currency
@@ -36,6 +38,7 @@ public class CurrencyController {
      * @return response in JSON format containing persisted currency data in DTO format
      * and status code 302 in case of success
      */
+    @PreAuthorize("hasRole('customer')")
     @GetMapping("/{currencyName}")
     public ResponseEntity<CurrencyDto> getCurrencyByName(
             @PathVariable("currencyName") String currencyName
