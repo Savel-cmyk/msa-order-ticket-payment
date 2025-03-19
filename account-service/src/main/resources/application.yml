@@ -13,3 +13,8 @@ spring:
       resourceserver:
         jwt:
           jwkSetUri: http://${KEYCLOAK_HOST_NAME}:8080/realms/demo/protocol/openid-connect/certs
+
+jwt:
+  auth:
+    converter:
+      resource-id: spring-with-test-scope
