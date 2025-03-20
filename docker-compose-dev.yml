@@ -210,6 +210,27 @@ services:
       retries: 3
       start_period: 30s
 
+  keycloak_db:
+    image: postgres
+    env_file:
+      - .env
+    container_name: ${KEYCLOAKDB_CONTAINER_NAME}
+    environment:
+      POSTGRES_USER: ${POSTGRESDB_USER_KEYCLOAK}
+      POSTGRES_PASSWORD: ${POSTGRESDB_PASSWORD_KEYCLOAK}
+      POSTGRES_DB: ${POSTGRESDB_KEYCLOAK_NAME}
+    volumes:
+      - pg_data_keycloak:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRESDB_USER_KEYCLOAK} -d ${POSTGRESDB_KEYCLOAK_NAME}'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
   keycloak-server:
     image: quay.io/keycloak/keycloak:23.0.7
     container_name: ${KEYCLOAK_CONTAINER_NAME}
@@ -218,24 +239,24 @@ services:
     env_file:
       - .env
     volumes:
-      - ./realm-export.json:/opt/keycloak/data/import/msa-order-ticket-payment.json
+      - ./realm-export-with-roles.json:/opt/keycloak/data/import/msa-order-ticket-payment.json
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       TZ: "Europe/Moscow"
-      KEYCLOAK_FRONTEND_URL: http://keycloak-server:8080
+#      KEYCLOAK_FRONTEND_URL: http://keycloak-server:8080
 #      KC_HOSTNAME: localhost
 #      KC_HOSTNAME_PORT: 8080
 #      KC_HOSTNAME_STRICT_BACKCHANNEL: false
 #      KC_HTTP_ENABLED: true
 #      KC_HOSTNAME_STRICT_HTTPS: false
 #      KC_HEALTH_ENABLED: true
-#      DB_VENDOR: postgres
-#      DB_ADDR: ${ACCOUNTSDB_CONTAINER_NAME}
-#      DB_PORT: ${POSTGRESDB_ACCOUNTS_PORT}
-#      DB_DATABASE: ${POSTGRESDB_ACCOUNTS_NAME}
-#      DB_USER: ${POSTGRESDB_USER}
-#      DB_PASSWORD: ${POSTGRESDB_PASSWORD}
+      KC_DB: postgres
+      KC_DB_SCHEMA: public
+      KC_DB_USERNAME: ${POSTGRESDB_USER_KEYCLOAK}
+      KC_DB_PASSWORD: ${POSTGRESDB_PASSWORD_KEYCLOAK}
+      KC_DB_URL: jdbc:postgresql://${KEYCLOAKDB_CONTAINER_NAME}:5432/${POSTGRESDB_KEYCLOAK_NAME}
+      KC_FEATURES: token-exchange,admin-fine-grained-authz
     networks:
       microservices-net:
         aliases:
@@ -337,4 +358,5 @@ volumes:
   pg_data_orders:
   pg_data_tickets:
   pg_data_accounts:
+  pg_data_keycloak:
   es_data:

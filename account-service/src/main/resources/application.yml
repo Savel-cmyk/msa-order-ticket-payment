@@ -17,4 +17,12 @@ spring:
 jwt:
   auth:
     converter:
-      resource-id: spring-with-test-scope
+      resource-id: ${KEYCLOAK_CLIENT_NAME}
+
+app:
+  keycloak:
+    admin:
+      clientId: admin-cli
+      clientSecret: v33I6yeb6rMFmsIP9wPru83Rv6uBidT7
+    realm: demo
+    serverUrl: http://${KEYCLOAK_HOST_NAME}:8080

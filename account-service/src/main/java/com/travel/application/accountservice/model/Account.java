@@ -1,5 +1,6 @@
 package com.travel.application.accountservice.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.Version;
@@ -17,10 +18,11 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     private Double amount;
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "currency_id",referencedColumnName = "id")
     @ToString.Exclude
     private Currency currency;
+    private UUID customerId;
     @Version
     private Long version;
 }

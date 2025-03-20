@@ -19,9 +19,13 @@ import jakarta.validation.constraints.Pattern;
 public record CustomerDto(
 
         @NotBlank
+        String username,
+        @NotBlank
         String surname,
         @NotBlank
         String name,
+        @NotBlank
+        String password,
         @NotEmpty
         String patronymic,
         @Pattern(

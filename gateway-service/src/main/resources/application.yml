@@ -28,7 +28,7 @@ spring:
           spring-with-test-scope:
             provider: keycloak-provider
             clientId: spring-with-test-scope
-            client-secret: IWLSnakHG8aNTWNaWuSj0a11UY4lzxd9
+            client-secret: 6O3pQv70M3IOqS8PH5Y5jtC3RJSnecBW
             authorization-grant-type: authorization_code
 #            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             scope: openid

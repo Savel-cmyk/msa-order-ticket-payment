@@ -1,6 +1,7 @@
 package com.travel.application.accountservice.service;
 
 import com.travel.application.accountservice.dto.CustomerDto;
+import com.travel.application.accountservice.dto.CustomerResponseDto;
 import com.travel.application.accountservice.dto.TicketPaymentRequestDto;
 import com.travel.application.accountservice.dto.TicketPaymentResponseDto;
 import com.travel.application.accountservice.exception.RecordNotFoundException;
@@ -9,11 +10,17 @@ import com.travel.application.accountservice.model.Customer;
 import com.travel.application.accountservice.mapper.CustomerMapper;
 import com.travel.application.accountservice.repository.AccountRepository;
 import com.travel.application.accountservice.repository.CustomerRepository;
+import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.UsersResource;
+import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -23,20 +30,55 @@ public class CustomerService {
     private final CustomerRepository customerRepository;
     private final AccountService accountService;
     private final AccountRepository accountRepository;
+    @Value("${app.keycloak.realm}")
+    private String realm;
+    private final Keycloak keycloak;
 
     /**
      * Service's method that maps received customer data in DTO format to DAO, saves mapped data
      * and maps saved data to DTO format to return
      *
-     * @param customer customer data in DTO format
+     * @param newUserRecord customer data in DTO format
      * @return saved customer data in corresponding DTO format
+     * @author Savel-cmyk
      */
-    public CustomerDto addCustomer(CustomerDto customer) {
+    @Transactional
+    public CustomerResponseDto addCustomer(CustomerDto newUserRecord) {
 
-        Customer transientCustomer = customerMapper.toCustomerDao(customer);
-        transientCustomer.setAccount(accountService.addAccountForCustomer());
-        Customer persistedCustomer = customerRepository.save(transientCustomer);
-        return customerMapper.toCustomerDto(persistedCustomer);
+        UserRepresentation  userRepresentation= new UserRepresentation();
+        userRepresentation.setEnabled(true);
+        userRepresentation.setFirstName(newUserRecord.name());
+        userRepresentation.setLastName(newUserRecord.surname());
+        userRepresentation.setUsername(newUserRecord.username());
+        userRepresentation.setEmail(newUserRecord.email());
+        //TODO: set up email verification
+        userRepresentation.setEmailVerified(true);
+
+        Map<String, List<String>> attributes = new HashMap<>();
+        Account customersAccount = accountService.addAccountForCustomer();
+        attributes.put("account_id", List.of(String.valueOf(customersAccount.getId())));
+        userRepresentation.setAttributes(attributes);
+
+        CredentialRepresentation credentialRepresentation = new CredentialRepresentation();
+        credentialRepresentation.setValue(newUserRecord.password());
+        credentialRepresentation.setType(CredentialRepresentation.PASSWORD);
+
+        userRepresentation.setCredentials(List.of(credentialRepresentation));
+
+        UsersResource usersResource = keycloak.realm(realm).users();
+
+        Response response = usersResource.create(userRepresentation);
+
+        if(!Objects.equals(201, response.getStatus())){
+
+            throw new RuntimeException("Status code " + response.getStatus());
+        }
+
+        List<UserRepresentation> userRepresentations = usersResource.searchByUsername(newUserRecord.username(), true);
+        UserRepresentation userRepresentationAfterSave = userRepresentations.get(0);
+        accountService.updateAccountForCustomer(userRepresentationAfterSave.getId(), customersAccount);
+
+        return customerMapper.toCustomerDto(userRepresentationAfterSave);
     }
 
     /**

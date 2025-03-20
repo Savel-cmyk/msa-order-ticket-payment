@@ -16,7 +16,15 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final JWTAuthConverter jwtAuthConverter;
-    private final String[] freeResourceUrls = {"/eureka/**", "/actuator/**"};
+    private final String[] freeResourceUrls = {
+            "/eureka/**",
+            "/actuator/**",
+//            Public Customer endpoints
+            "/api/v1/customer/public",
+            "/api/v1/customer/public/**",
+//            Public Currency endpoints
+            "/api/v1/currency/public/**"
+    };
 
     @Bean
     public SecurityFilterChain securityWebFilterChain(HttpSecurity http) throws Exception {

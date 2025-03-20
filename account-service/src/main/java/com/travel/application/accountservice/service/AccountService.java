@@ -8,6 +8,8 @@ import com.travel.application.accountservice.repository.CurrencyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 /**
  * @author Savel-cmyk
  * @version 0.0.1
@@ -37,5 +39,17 @@ public class AccountService {
                 )
                 .build();
         return accountRepository.save(customerAccount);
+    }
+
+    /**
+     * Method for updating account by adding customer's id value of account owner
+     *
+     * @param customerId customer's unique identifier
+     * @param accountForUpdate account that is to be updated
+     */
+    public void updateAccountForCustomer(String customerId, Account accountForUpdate) {
+
+        accountForUpdate.setCustomerId(UUID.fromString(customerId));
+        accountRepository.save(accountForUpdate);
     }
 }

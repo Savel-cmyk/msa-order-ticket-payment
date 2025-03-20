@@ -1,6 +1,7 @@
 package com.travel.application.accountservice.controller;
 
 import com.travel.application.accountservice.dto.CustomerDto;
+import com.travel.application.accountservice.dto.CustomerResponseDto;
 import com.travel.application.accountservice.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -9,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -23,17 +25,17 @@ public class CustomerController {
     private final CustomerService customerService;
 
     /**
-     * Controller's method for customer record creation in DB
+     * Controller's method for customer record creation in DB (basically user registration)
      *
      * @param customerDto requested data in DTO format to store
      * @return saved customer data in DTO format with 201 status code
+     * @author Savel-cmyk
      */
-    @PreAuthorize("hasRole('admin')")
-    @PostMapping
-    public ResponseEntity<CustomerDto> addCustomer(
+    @PostMapping("/public")
+    public ResponseEntity<CustomerResponseDto> addCustomer(
             @RequestBody CustomerDto customerDto
     ) {
-        CustomerDto persistedCustomer = customerService.addCustomer(customerDto);
+        CustomerResponseDto persistedCustomer = customerService.addCustomer(customerDto);
         return new ResponseEntity<>(persistedCustomer,HttpStatus.CREATED);
     }
 
@@ -42,9 +44,10 @@ public class CustomerController {
      *
      * @param customerId customer's unique identifier to retrieve from DB
      * @return customer's data that corresponds to requested unique identifier and 200 status code in case of success
+     * @author Savel-cmyk
      */
     @PreAuthorize("hasRole('customer')")
-    @GetMapping("/{customerId}")
+    @GetMapping("/private/{customerId}")
     public ResponseEntity<CustomerDto> getCustomerById(
             @PathVariable("customerId") String customerId
     ) {
@@ -52,11 +55,14 @@ public class CustomerController {
         return new ResponseEntity<>(persistedCustomer, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('admin')")
-    @GetMapping("/ping")
+//    @PreAuthorize("hasRole('admin')")
+    @GetMapping("/public/ping")
     public String ping() {
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication authentication = context.getAuthentication();
-        return "Scopes: " + authentication.getAuthorities();
+        return "Details: " + authentication.getDetails() +
+                "Principal: " + ((Jwt) authentication.getPrincipal()).getClaims() +
+                "Scopes: " + authentication.getAuthorities() +
+                "Credentials: " + ((Jwt) authentication.getCredentials()).getClaims();
     }
 }
