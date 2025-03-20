@@ -51,15 +51,4 @@ public class CustomerController {
         CustomerResponseDto persistedCustomer = customerService.getCustomerInfo();
         return new ResponseEntity<>(persistedCustomer, HttpStatus.OK);
     }
-
-//    @PreAuthorize("hasRole('admin')")
-    @GetMapping("/public/ping")
-    public String ping() {
-        SecurityContext context = SecurityContextHolder.getContext();
-        Authentication authentication = context.getAuthentication();
-        return "Details: " + authentication.getDetails() +
-                "Principal: " + ((Jwt) authentication.getPrincipal()).getClaims() +
-                "Scopes: " + authentication.getAuthorities() +
-                "Credentials: " + ((Jwt) authentication.getCredentials()).getClaims();
-    }
 }

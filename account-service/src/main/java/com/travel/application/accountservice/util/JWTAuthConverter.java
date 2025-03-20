@@ -39,12 +39,10 @@ public class JWTAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
 
     private Collection<? extends GrantedAuthority> extractResourceRoles(Jwt jwt) {
 
-//        Map<String, Object> realmAccess = jwt.getClaim("realm_access");
         Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
 
         Collection<String> allRoles = new ArrayList<>();
         Collection<String> resourceRoles;
-//        Collection<String> realmRoles ;
 
         if(resourceAccess != null && resourceAccess.get(resourceId) != null){
             Map<String,Object> account =  (Map<String,Object>) resourceAccess.get(resourceId);
@@ -54,10 +52,6 @@ public class JWTAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
             }
         }
 
-//        if(realmAccess != null && realmAccess.containsKey("roles")){
-//            realmRoles = (Collection<String>) realmAccess.get("roles");
-//            allRoles.addAll(realmRoles);
-//        }
         if (allRoles.isEmpty() || !Objects.equals(resourceId, jwt.getClaim("azp")) ) {
 
             return Set.of();

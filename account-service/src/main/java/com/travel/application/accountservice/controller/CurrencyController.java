@@ -38,7 +38,6 @@ public class CurrencyController {
      * @return response in JSON format containing persisted currency data in DTO format
      * and status code 302 in case of success
      */
-//    @PreAuthorize("hasRole('customer')")
     @GetMapping("/public/{currencyName}")
     public ResponseEntity<CurrencyDto> getCurrencyByName(
             @PathVariable("currencyName") String currencyName

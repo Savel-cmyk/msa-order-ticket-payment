@@ -6,10 +6,8 @@ import com.travel.application.accountservice.dto.TicketPaymentRequestDto;
 import com.travel.application.accountservice.dto.TicketPaymentResponseDto;
 import com.travel.application.accountservice.exception.RecordNotFoundException;
 import com.travel.application.accountservice.model.Account;
-import com.travel.application.accountservice.model.Customer;
 import com.travel.application.accountservice.mapper.CustomerMapper;
 import com.travel.application.accountservice.repository.AccountRepository;
-import com.travel.application.accountservice.repository.CustomerRepository;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.admin.client.Keycloak;
@@ -31,7 +29,6 @@ import java.util.*;
 public class CustomerService {
 
     private final CustomerMapper customerMapper;
-    private final CustomerRepository customerRepository;
     private final AccountService accountService;
     private final AccountRepository accountRepository;
     @Value("${app.keycloak.realm}")
@@ -49,7 +46,7 @@ public class CustomerService {
     @Transactional
     public CustomerResponseDto addCustomer(CustomerDto newUserRecord) {
 
-        UserRepresentation  userRepresentation= new UserRepresentation();
+        UserRepresentation userRepresentation = new UserRepresentation();
         userRepresentation.setEnabled(true);
         userRepresentation.setFirstName(newUserRecord.name());
         userRepresentation.setLastName(newUserRecord.surname());
@@ -73,7 +70,7 @@ public class CustomerService {
 
         Response response = usersResource.create(userRepresentation);
 
-        if(!Objects.equals(201, response.getStatus())){
+        if (!Objects.equals(201, response.getStatus())) {
 
             throw new RuntimeException("Status code " + response.getStatus());
         }
@@ -107,13 +104,27 @@ public class CustomerService {
     @Transactional
     public TicketPaymentResponseDto payForTicket(TicketPaymentRequestDto ticketPaymentRequest) {
 
-        Customer customerToPay = customerRepository
-                .findById(UUID.fromString(ticketPaymentRequest.customerId()))
+        UsersResource usersResource = keycloak.realm(realm).users();
+        UserRepresentation customerToPay = usersResource.list()
+                .stream()
+                .filter(userRepresentation ->
+                        ticketPaymentRequest.customerId().equals(userRepresentation.getId()))
+                .findFirst()
                 .orElseThrow(() -> new RecordNotFoundException(
                         "No customer record with requested id found",
-                        Customer.class.getName()
+                        UUID.class.getName()
                 ));
-        Account customerAccount = customerToPay.getAccount();
+
+        Account customerAccount = accountRepository.findById(
+                        UUID.fromString(customerToPay.getAttributes()
+                                .get("account_id")
+                                .get(0)
+                        )
+                ).orElseThrow(() -> new RecordNotFoundException(
+                                "No customer record with requested id found",
+                                Account.class.getName()
+                        )
+                );
 
         TicketPaymentResponseDto ticketPaymentResponse;
         if (accountRepository.withdrawIfEnough(Double.valueOf(ticketPaymentRequest.cost()), customerAccount.getId()) > 0) {
