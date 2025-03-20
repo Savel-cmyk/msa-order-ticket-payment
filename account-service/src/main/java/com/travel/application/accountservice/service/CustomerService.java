@@ -17,6 +17,10 @@ import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,20 +86,17 @@ public class CustomerService {
     }
 
     /**
-     * Service's method that retrieves customer data by requested id and returns it in DTO format
+     * Service's method that retrieves customer data from JWT claims and returns it in DTO format
      *
-     * @param customerId customer's unique identifier
      * @return customer's data in DTO format
-     * @throws RecordNotFoundException if no data had been found for corresponding id
+     * @author Savel-cmyk
      */
-    public CustomerDto getCustomerById(String customerId) {
+    public CustomerResponseDto getCustomerInfo() {
 
-        Customer persistedCustomer = customerRepository.findById(UUID.fromString(customerId))
-                .orElseThrow(() -> new RecordNotFoundException(
-                        "No customer record with requested id found",
-                        Customer.class.getName()
-                ));
-        return customerMapper.toCustomerDto(persistedCustomer);
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication authInfo = context.getAuthentication();
+        Map<String, Object> tokenClaims = ((Jwt) authInfo.getCredentials()).getClaims();
+        return customerMapper.toCustomerDto(tokenClaims);
     }
 
     /**

@@ -40,18 +40,15 @@ public class CustomerController {
     }
 
     /**
-     * Controller's method for customer's info retrieval from DB for corresponding id
+     * Controller's method for customer's info retrieval from JWT claims
      *
-     * @param customerId customer's unique identifier to retrieve from DB
      * @return customer's data that corresponds to requested unique identifier and 200 status code in case of success
      * @author Savel-cmyk
      */
-    @PreAuthorize("hasRole('customer')")
-    @GetMapping("/private/{customerId}")
-    public ResponseEntity<CustomerDto> getCustomerById(
-            @PathVariable("customerId") String customerId
-    ) {
-        CustomerDto persistedCustomer = customerService.getCustomerById(customerId);
+    @PreAuthorize("hasAnyRole('customer', 'admin')")
+    @GetMapping("/private")
+    public ResponseEntity<CustomerResponseDto> getCustomerInfo() {
+        CustomerResponseDto persistedCustomer = customerService.getCustomerInfo();
         return new ResponseEntity<>(persistedCustomer, HttpStatus.OK);
     }
 
