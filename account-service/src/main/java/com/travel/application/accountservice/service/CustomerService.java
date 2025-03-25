@@ -11,8 +11,11 @@ import com.travel.application.accountservice.repository.AccountRepository;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.RolesResource;
+import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -30,9 +33,10 @@ public class CustomerService {
 
     private final CustomerMapper customerMapper;
     private final AccountService accountService;
-    private final AccountRepository accountRepository;
     @Value("${app.keycloak.realm}")
     private String realm;
+    @Value("${jwt.auth.converter.resource-id}")
+    private String clientId;
     private final Keycloak keycloak;
 
     /**
@@ -65,11 +69,8 @@ public class CustomerService {
         credentialRepresentation.setType(CredentialRepresentation.PASSWORD);
 
         userRepresentation.setCredentials(List.of(credentialRepresentation));
-
-        UsersResource usersResource = keycloak.realm(realm).users();
-
+        UsersResource usersResource = getUsersResource();
         Response response = usersResource.create(userRepresentation);
-
         if (!Objects.equals(201, response.getStatus())) {
 
             throw new RuntimeException("Status code " + response.getStatus());
@@ -77,6 +78,8 @@ public class CustomerService {
 
         List<UserRepresentation> userRepresentations = usersResource.searchByUsername(newUserRecord.username(), true);
         UserRepresentation userRepresentationAfterSave = userRepresentations.get(0);
+
+        assignRole(userRepresentationAfterSave.getId(), "CUSTOMER");
         accountService.updateAccountForCustomer(userRepresentationAfterSave.getId(), customersAccount);
 
         return customerMapper.toCustomerDto(userRepresentationAfterSave);
@@ -90,57 +93,76 @@ public class CustomerService {
      */
     public CustomerResponseDto getCustomerInfo() {
 
-        SecurityContext context = SecurityContextHolder.getContext();
-        Authentication authInfo = context.getAuthentication();
-        Map<String, Object> tokenClaims = ((Jwt) authInfo.getCredentials()).getClaims();
+        Map<String, Object> tokenClaims = retrieveJwtFromSecurityContext().getClaims();
         return customerMapper.toCustomerDto(tokenClaims);
+    }
+
+    /**
+     * Service's method that deletes customer related data
+     *
+     * @author Savel-cmyk
+     */
+    @Transactional
+    public void deleteCustomerByCustomer() {
+
+        String customerUUID = retrieveJwtFromSecurityContext().getClaimAsString("sub");
+        UserResource customer = getUsersResource().get(customerUUID);
+        UserRepresentation customerRepresentation = customer.toRepresentation();
+        accountService.deleteAccountForCustomer(customerRepresentation.firstAttribute("account_id"));
+        customer.remove();
     }
 
     /**
      * Method for handling ticket booking process
      *
      * @param ticketPaymentRequest info that is required for producing transaction
+     * @author Savel-cmyk
      */
     @Transactional
     public TicketPaymentResponseDto payForTicket(TicketPaymentRequestDto ticketPaymentRequest) {
 
-        UsersResource usersResource = keycloak.realm(realm).users();
-        UserRepresentation customerToPay = usersResource.list()
-                .stream()
-                .filter(userRepresentation ->
-                        ticketPaymentRequest.customerId().equals(userRepresentation.getId()))
-                .findFirst()
-                .orElseThrow(() -> new RecordNotFoundException(
-                        "No customer record with requested id found",
-                        UUID.class.getName()
-                ));
+        UsersResource usersResource = getUsersResource();
+        UserRepresentation customerToPay = usersResource.get(ticketPaymentRequest.customerId()).toRepresentation();
 
-        Account customerAccount = accountRepository.findById(
-                        UUID.fromString(customerToPay.getAttributes()
-                                .get("account_id")
-                                .get(0)
-                        )
-                ).orElseThrow(() -> new RecordNotFoundException(
-                                "No customer record with requested id found",
-                                Account.class.getName()
-                        )
-                );
+        return accountService.payForTicket(customerToPay.firstAttribute("account_id"), ticketPaymentRequest);
+    }
 
-        TicketPaymentResponseDto ticketPaymentResponse;
-        if (accountRepository.withdrawIfEnough(Double.valueOf(ticketPaymentRequest.cost()), customerAccount.getId()) > 0) {
+    /**
+     * Method for retrieval of JWT from {@code SecurityContext.class}
+     *
+     * @return JSON Web Token
+     * @author Savel-cmyk
+     */
+    private Jwt retrieveJwtFromSecurityContext() {
 
-            ticketPaymentResponse = new TicketPaymentResponseDto(
-                    ticketPaymentRequest.orderId(),
-                    "BOOKED",
-                    ticketPaymentRequest.ticketId()
-            );
-        } else {
-            ticketPaymentResponse = new TicketPaymentResponseDto(
-                    ticketPaymentRequest.orderId(),
-                    "PAYMENT_FAILED",
-                    ticketPaymentRequest.ticketId()
-            );
-        }
-        return ticketPaymentResponse;
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication authInfo = context.getAuthentication();
+        return (Jwt) authInfo.getCredentials();
+    }
+
+    /**
+     * Method for fetching user entity from security provider storage
+     *
+     * @return lazy(?) fetched users from security provider storage
+     * @author Savel-cmyk
+     */
+    private UsersResource getUsersResource() {
+
+        return keycloak.realm(realm).users();
+    }
+
+    /**
+     * Method for role assignment to user
+     *
+     * @param userId user's unique identifier
+     * @param roleName role's name to assign to user
+     * @author Savel-cmyk
+     */
+    private void assignRole(String userId, String roleName) {
+
+        UserResource user = getUsersResource().get(userId);
+        RolesResource rolesResource = keycloak.realm(realm).roles();
+        RoleRepresentation representation = rolesResource.get(roleName).toRepresentation();
+        user.roles().realmLevel().add(Collections.singletonList(representation));
     }
 }

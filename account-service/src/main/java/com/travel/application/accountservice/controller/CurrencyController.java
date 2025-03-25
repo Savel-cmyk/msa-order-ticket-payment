@@ -22,7 +22,7 @@ public class CurrencyController {
      * @return response in JSON format containing persisted currency data in DTO format
      * and status code 201 in case of success
      */
-    @PreAuthorize("hasRole('admin')")
+    @PreAuthorize("hasRole('MANAGER')")
     @PostMapping("/private")
     public ResponseEntity<CurrencyDto> addCurrencyType(
             @RequestBody CurrencyDto currency

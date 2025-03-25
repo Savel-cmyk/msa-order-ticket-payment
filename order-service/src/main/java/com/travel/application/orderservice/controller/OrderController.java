@@ -35,6 +35,7 @@ public class OrderController {
                     )
             }
     )
+    //TODO: make app retrieve customer id from security context
     @PostMapping("/{customerId}")
     public ResponseEntity<OrderWithoutDetailedTicketInfoResponseDto> addOrderForTicket(
             @PathVariable("customerId") String customerId

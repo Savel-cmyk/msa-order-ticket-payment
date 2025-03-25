@@ -45,10 +45,24 @@ public class CustomerController {
      * @return customer's data that corresponds to requested unique identifier and 200 status code in case of success
      * @author Savel-cmyk
      */
-    @PreAuthorize("hasAnyRole('customer', 'admin')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'MANAGER')")
     @GetMapping("/private")
     public ResponseEntity<CustomerResponseDto> getCustomerInfo() {
+
         CustomerResponseDto persistedCustomer = customerService.getCustomerInfo();
         return new ResponseEntity<>(persistedCustomer, HttpStatus.OK);
+    }
+
+    /**
+     * Controller's method for customer's account and entity record from security provider
+     *
+     * @return status code
+     * @author Savel-cmyk
+     */
+    @DeleteMapping("/private")
+    public ResponseEntity<?> deleteCustomerByCustomer() {
+
+        customerService.deleteCustomerByCustomer();
+        return ResponseEntity.noContent().build();
     }
 }
