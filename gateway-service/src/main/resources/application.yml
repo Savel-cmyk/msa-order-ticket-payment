@@ -4,31 +4,5 @@ spring:
   config:
     import: configserver:http://${CONFIG_SERVER_CONTAINER_NAME}:${CONFIG_SERVER_PORT}
   cloud:
-    gateway:
-      defaultFilters:
-        - TokenRelay=
     config:
       fail-fast: true
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          jwkSetUri: ${OIDC_ISSUER_URI_OUTER}/protocol/openid-connect/certs
-      client:
-        provider:
-          keycloak-provider:
-            issuerUri: ${OIDC_ISSUER_URI_OUTER}
-            authorizationUri: ${OIDC_ISSUER_URI_OUTER}/protocol/openid-connect/auth
-            userInfoUri: ${OIDC_ISSUER_URI_OUTER}/protocol/openid-connect/userinfo
-            tokenUri: ${OIDC_ISSUER_URI_OUTER}/protocol/openid-connect/token
-#            jwkSetUri: http://${KEYCLOAK_CONTAINER_NAME}:8080/realms/msa-order-ticket-payment/protocol/openid-connect/certs
-#            user-name-attribute: preferred_username
-#            user-info-authentication-method: header
-        registration:
-          spring-with-test-scope:
-            provider: keycloak-provider
-            clientId: spring-with-test-scope
-            client-secret: 6O3pQv70M3IOqS8PH5Y5jtC3RJSnecBW
-            authorization-grant-type: authorization_code
-#            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            scope: openid
