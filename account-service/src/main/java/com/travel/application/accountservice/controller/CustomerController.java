@@ -65,4 +65,12 @@ public class CustomerController {
         customerService.deleteCustomerByCustomer();
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/private/ping")
+    public ResponseEntity<?> ping() {
+
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication auth = context.getAuthentication();
+        return new ResponseEntity<>(auth.getAuthorities(), HttpStatus.OK);
+    }
 }
