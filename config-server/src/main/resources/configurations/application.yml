@@ -34,3 +34,6 @@ spring:
       resourceserver:
         jwt:
           jwkSetUri: ${OIDC_ISSUER_URI_OUTER}/protocol/openid-connect/certs
+
+logging:
+  config: classpath:logback-spring.xml

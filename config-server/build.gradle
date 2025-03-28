@@ -24,6 +24,9 @@ ext {
 dependencies {
     implementation 'org.springframework.cloud:spring-cloud-config-server'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+    compileOnly 'ch.qos.logback:logback-classic'
+    compileOnly 'ch.qos.logback:logback-core'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }

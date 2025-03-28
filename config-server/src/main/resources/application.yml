@@ -26,3 +26,6 @@ management:
 #    health:
 #      probes:
 #        enabled: true
+
+logging:
+  config: classpath:logback-spring.xml

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <property name="service.name" value="${ORDER_SERVICE_CONTAINER_NAME:-default-service}" />
+    <property name="service.name" value="${TICKET_SERVICE_CONTAINER_NAME:-default-service}" />
 
     <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
         <destination>logstash:5044</destination>
