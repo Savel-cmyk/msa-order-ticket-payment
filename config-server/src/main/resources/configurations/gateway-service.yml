@@ -1,6 +1,13 @@
 spring:
+#  security:
+#    oauth2:
+#      resourceserver:
+#        jwt:
+#          issuerUri: "http://${KEYCLOAK_CONTAINER_NAME}:${KEYCLOAK_PORT}/realms/msa-order-ticket-payment"
   cloud:
     gateway:
+      defaultFilters:
+        - TokenRelay=
       discovery:
         locator:
           enabled: true
@@ -16,7 +23,28 @@ spring:
         - id: account-service
           uri: lb:http://ACCOUNT-SERVICE
           predicates:
-            - Path=/api/v1/accounts/v3/api-docs,/api/v1/customer/**,/api/v1/currency/**
+            - Path=/api/v1/accounts/**,/api/v1/customer/**,/api/v1/currency/**
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak-provider:
+            issuerUri: ${OIDC_ISSUER_URI_OUTER}
+            authorizationUri: ${OIDC_ISSUER_URI_OUTER}/protocol/openid-connect/auth
+            userInfoUri: ${OIDC_ISSUER_URI_OUTER}/protocol/openid-connect/userinfo
+            tokenUri: ${OIDC_ISSUER_URI_OUTER}/protocol/openid-connect/token
+#            jwkSetUri: http://${KEYCLOAK_CONTAINER_NAME}:8080/realms/msa-order-ticket-payment/protocol/openid-connect/certs
+#            user-name-attribute: preferred_username
+#            user-info-authentication-method: header
+        registration:
+          spring-with-test-scope:
+            provider: keycloak-provider
+            clientId: spring-with-test-scope
+            client-secret: ${KEYCLOAK_CLIENT_SECRET}
+            authorization-grant-type: authorization_code
+#            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope: openid
+
 server:
   port: ${GATEWAY_SERVER_PORT}
 

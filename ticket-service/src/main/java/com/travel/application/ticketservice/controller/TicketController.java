@@ -6,6 +6,7 @@ import com.travel.application.ticketservice.service.TicketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,10 +20,12 @@ public class TicketController {
 
     /**
      * Controller's POST method for saving ticket data to database.
+     *
      * @param ticketRequest
      * @return ResponseEntity with http status and ticket data in DTO format
      */
-    @PostMapping
+    @PreAuthorize("hasRole('MANAGER')")
+    @PostMapping("/private")
     public ResponseEntity<TicketResponseDto> addTicket(
             @RequestBody TicketRequestDto ticketRequest
     ) {
@@ -31,9 +34,10 @@ public class TicketController {
 
     /**
      * Controller's GET method for retrieving data about all tickets in DB in DTO format
+     *
      * @return ResponseEntity with http status and tickets data in DTO format
      */
-    @GetMapping
+    @GetMapping("/public")
     public ResponseEntity<List<TicketResponseDto>> getTicket() {
         return new ResponseEntity<>(ticketService.getAllTickets(), HttpStatus.OK);
     }

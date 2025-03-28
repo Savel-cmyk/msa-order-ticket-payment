@@ -8,6 +8,8 @@ spring:
     hibernate.ddlAuto: update
     database: postgresql
     databasePlatform: org.hibernate.dialect.PostgreSQLDialect
+  liquibase:
+    enabled: false
   kafka:
     bootstrap-servers: ${KAFKA_CONTAINER_NAME}:9092
     producer:
@@ -34,6 +36,14 @@ eureka:
   client:
     registerWithEureka: true
     fetchRegistry: true
+
+app:
+  keycloak:
+    admin:
+      clientId: admin-cli
+      clientSecret: ${KEYCLOAK_ADMIN_CLIENT_SECRET}
+    realm: demo
+    serverUrl: http://${KEYCLOAK_HOST_NAME}:8080
 
 springdoc:
   api-docs:

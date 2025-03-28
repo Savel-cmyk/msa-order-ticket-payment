@@ -1,8 +1,10 @@
 package com.travel.application.accountservice.mapper;
 
-import com.travel.application.accountservice.model.Customer;
-import com.travel.application.accountservice.dto.CustomerDto;
+import com.travel.application.accountservice.dto.CustomerResponseDto;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 /**
  * @author Savel-cmyk
@@ -12,32 +14,39 @@ import org.springframework.stereotype.Service;
 public class CustomerMapper {
 
     /**
-     * Method for transferring data from customer DTO to newly created customer DAO
-     * @param customer data in DTO format
-     * @return customer data in corresponding DAO format
+     * Method for transferring data from received customer DAO from identity provider
+     * to newly created customer DTO
+     *
+     * @param user persisted customer info
+     * @return persisted customer's info in DTO format
+     * @author Savel-cmyk
      */
-    public Customer toCustomerDao(CustomerDto customer) {
-        return Customer.builder()
-                .surname(customer.surname())
-                .name(customer.name())
-                .patronymic(customer.patronymic())
-                .email(customer.email())
-                .phoneNumber(customer.phoneNumber())
-                .build();
+    public CustomerResponseDto toCustomerDto(UserRepresentation user) {
+
+        return new CustomerResponseDto(
+                user.getId(),
+                user.getLastName(),
+                user.getFirstName(),
+                user.getUsername(),
+                user.getEmail()
+        );
     }
 
     /**
-     * Method for transferring data from received customer DAO to newly created customer DTO
-     * @param persistedCustomer data in DAO format
-     * @return customer data in corresponding DTO format
+     * Method for transferring data from JWT claims to newly created customer DTO
+     *
+     * @param tokenClaims given JWT claims
+     * @return persisted customer data
+     * @author Savel-cmyk
      */
-    public CustomerDto toCustomerDto(Customer persistedCustomer) {
-        return new CustomerDto(
-                persistedCustomer.getSurname(),
-                persistedCustomer.getName(),
-                persistedCustomer.getPatronymic(),
-                persistedCustomer.getEmail(),
-                persistedCustomer.getPhoneNumber()
+    public CustomerResponseDto toCustomerDto(Map<String, Object> tokenClaims) {
+
+        return new CustomerResponseDto(
+                (String) tokenClaims.get("sub"),
+                (String) tokenClaims.get("family_name"),
+                (String) tokenClaims.get("given_name"),
+                (String) tokenClaims.get("preferred_username"),
+                (String) tokenClaims.get("email")
         );
     }
 }

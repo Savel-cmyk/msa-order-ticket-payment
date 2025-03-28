@@ -20,7 +20,17 @@ management:
 #      probes:
 #        enabled: true
 
+jwt:
+  auth:
+    converter:
+      resource-id: ${KEYCLOAK_CLIENT_NAME}
+
 spring:
   cloud:
     config:
       overrideSystemProperties: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwkSetUri: ${OIDC_ISSUER_URI_OUTER}/protocol/openid-connect/certs

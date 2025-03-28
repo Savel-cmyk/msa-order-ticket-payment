@@ -47,6 +47,8 @@ services:
     container_name: ${GATEWAY_SERVICE_CONTAINER_NAME}
     ports:
       - "${GATEWAY_SERVER_PORT}:${GATEWAY_SERVER_PORT}"
+    environment:
+      - TZ=Europe/Moscow
     networks:
       - microservices-net
     depends_on:
@@ -205,6 +207,54 @@ services:
       retries: 3
       start_period: 30s
 
+  keycloak_db:
+    image: postgres
+    env_file:
+      - .env
+    container_name: ${KEYCLOAKDB_CONTAINER_NAME}
+    environment:
+      POSTGRES_USER: ${POSTGRESDB_USER_KEYCLOAK}
+      POSTGRES_PASSWORD: ${POSTGRESDB_PASSWORD_KEYCLOAK}
+      POSTGRES_DB: ${POSTGRESDB_KEYCLOAK_NAME}
+    volumes:
+      - pg_data_keycloak:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRESDB_USER_KEYCLOAK} -d ${POSTGRESDB_KEYCLOAK_NAME}'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
+  keycloak-server:
+    image: quay.io/keycloak/keycloak:23.0.7
+    container_name: ${KEYCLOAK_CONTAINER_NAME}
+    ports:
+      - 8080:8080
+    env_file:
+      - .env
+    volumes:
+      - ./realm-export-with-roles.json:/opt/keycloak/data/import/msa-order-ticket-payment.json
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      TZ: "Europe/Moscow"
+      KC_DB: postgres
+      KC_DB_SCHEMA: public
+      KC_DB_USERNAME: ${POSTGRESDB_USER_KEYCLOAK}
+      KC_DB_PASSWORD: ${POSTGRESDB_PASSWORD_KEYCLOAK}
+      KC_DB_URL: jdbc:postgresql://${KEYCLOAKDB_CONTAINER_NAME}:5432/${POSTGRESDB_KEYCLOAK_NAME}
+      KC_FEATURES: token-exchange,admin-fine-grained-authz
+    networks:
+      microservices-net:
+        aliases:
+          - keycloak.server.com
+    command:
+      - "start-dev"
+      - "--import-realm"
+
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     container_name: zookeeper
@@ -244,11 +294,13 @@ services:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xmx256m -Xms256m"
     container_name: elasticsearch
     ulimits:
       memlock:
         soft: -1
         hard: -1
+    mem_limit: 1g
     ports:
       - "9200:9200"
     volumes:
@@ -298,4 +350,5 @@ volumes:
   pg_data_orders:
   pg_data_tickets:
   pg_data_accounts:
+  pg_data_keycloak:
   es_data:
