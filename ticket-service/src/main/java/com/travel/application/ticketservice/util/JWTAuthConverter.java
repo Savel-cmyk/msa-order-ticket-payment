@@ -1,14 +1,11 @@
-package com.travel.application.accountservice.util;
+package com.travel.application.ticketservice.util;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimNames;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -27,11 +24,6 @@ public class JWTAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
     @Value("${jwt.auth.converter.resource-id}")
     private String resourceId;
 
-    /**
-     *
-     * @param jwt
-     * @return
-     */
     @Override
     public AbstractAuthenticationToken convert(@NonNull Jwt jwt) {
         Collection<GrantedAuthority> authorities = Stream.concat(
@@ -40,21 +32,11 @@ public class JWTAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
         return new JwtAuthenticationToken(jwt, authorities, getPrincipalClaimName(jwt));
     }
 
-    /**
-     *
-     * @param jwt
-     * @return
-     */
     private String getPrincipalClaimName(Jwt jwt) {
         String claimName = JwtClaimNames.SUB;
         return jwt.getClaim(claimName);
     }
 
-    /**
-     *
-     * @param jwt
-     * @return
-     */
     private Collection<? extends GrantedAuthority> extractResourceRoles(Jwt jwt) {
 
         Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
@@ -62,10 +44,9 @@ public class JWTAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
         Collection<String> allRoles = new ArrayList<>();
         Collection<String> resourceRoles;
 
-        if (resourceAccess != null && resourceAccess.get(resourceId) != null) {
-
+        if(resourceAccess != null && resourceAccess.get(resourceId) != null){
             Map<String,Object> account =  (Map<String,Object>) resourceAccess.get(resourceId);
-            if (account.containsKey("roles")) {
+            if(account.containsKey("roles") ){
                 resourceRoles = (Collection<String>) account.get("roles");
                 allRoles.addAll(resourceRoles);
             }
@@ -91,18 +72,5 @@ public class JWTAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
         return allRoles.stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
                 .collect(Collectors.toSet());
-    }
-
-    /**
-     * Method for retrieval of JWT from {@code SecurityContext.class}
-     *
-     * @return JSON Web Token
-     * @author Savel-cmyk
-     */
-    public Jwt retrieveJwtFromSecurityContext() {
-
-        SecurityContext context = SecurityContextHolder.getContext();
-        Authentication authInfo = context.getAuthentication();
-        return (Jwt) authInfo.getCredentials();
     }
 }

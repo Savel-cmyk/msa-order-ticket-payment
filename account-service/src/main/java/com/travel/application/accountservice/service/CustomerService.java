@@ -4,24 +4,18 @@ import com.travel.application.accountservice.dto.CustomerDto;
 import com.travel.application.accountservice.dto.CustomerResponseDto;
 import com.travel.application.accountservice.dto.TicketPaymentRequestDto;
 import com.travel.application.accountservice.dto.TicketPaymentResponseDto;
-import com.travel.application.accountservice.exception.RecordNotFoundException;
 import com.travel.application.accountservice.model.Account;
 import com.travel.application.accountservice.mapper.CustomerMapper;
-import com.travel.application.accountservice.repository.AccountRepository;
+import com.travel.application.accountservice.util.JWTAuthConverter;
+import com.travel.application.accountservice.util.KeycloakAdapter;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
-import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RolesResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,11 +27,8 @@ public class CustomerService {
 
     private final CustomerMapper customerMapper;
     private final AccountService accountService;
-    @Value("${app.keycloak.realm}")
-    private String realm;
-    @Value("${jwt.auth.converter.resource-id}")
-    private String clientId;
-    private final Keycloak keycloak;
+    private final JWTAuthConverter jwtAuthConverter;
+    private final KeycloakAdapter keycloakAdapter;
 
     /**
      * Service's method that maps received customer data in DTO format to DAO, saves mapped data
@@ -69,7 +60,7 @@ public class CustomerService {
         credentialRepresentation.setType(CredentialRepresentation.PASSWORD);
 
         userRepresentation.setCredentials(List.of(credentialRepresentation));
-        UsersResource usersResource = getUsersResource();
+        UsersResource usersResource = keycloakAdapter.getUsersResource();
         Response response = usersResource.create(userRepresentation);
         if (!Objects.equals(201, response.getStatus())) {
 
@@ -93,7 +84,7 @@ public class CustomerService {
      */
     public CustomerResponseDto getCustomerInfo() {
 
-        Map<String, Object> tokenClaims = retrieveJwtFromSecurityContext().getClaims();
+        Map<String, Object> tokenClaims = jwtAuthConverter.retrieveJwtFromSecurityContext().getClaims();
         return customerMapper.toCustomerDto(tokenClaims);
     }
 
@@ -105,8 +96,8 @@ public class CustomerService {
     @Transactional
     public void deleteCustomerByCustomer() {
 
-        String customerUUID = retrieveJwtFromSecurityContext().getClaimAsString("sub");
-        UserResource customer = getUsersResource().get(customerUUID);
+        String customerUUID = jwtAuthConverter.retrieveJwtFromSecurityContext().getClaimAsString("sub");
+        UserResource customer = keycloakAdapter.getUsersResource().get(customerUUID);
         UserRepresentation customerRepresentation = customer.toRepresentation();
         accountService.deleteAccountForCustomer(customerRepresentation.firstAttribute("account_id"));
         customer.remove();
@@ -121,34 +112,10 @@ public class CustomerService {
     @Transactional
     public TicketPaymentResponseDto payForTicket(TicketPaymentRequestDto ticketPaymentRequest) {
 
-        UsersResource usersResource = getUsersResource();
+        UsersResource usersResource = keycloakAdapter.getUsersResource();
         UserRepresentation customerToPay = usersResource.get(ticketPaymentRequest.customerId()).toRepresentation();
 
         return accountService.payForTicket(customerToPay.firstAttribute("account_id"), ticketPaymentRequest);
-    }
-
-    /**
-     * Method for retrieval of JWT from {@code SecurityContext.class}
-     *
-     * @return JSON Web Token
-     * @author Savel-cmyk
-     */
-    private Jwt retrieveJwtFromSecurityContext() {
-
-        SecurityContext context = SecurityContextHolder.getContext();
-        Authentication authInfo = context.getAuthentication();
-        return (Jwt) authInfo.getCredentials();
-    }
-
-    /**
-     * Method for fetching user entity from security provider storage
-     *
-     * @return lazy(?) fetched users from security provider storage
-     * @author Savel-cmyk
-     */
-    private UsersResource getUsersResource() {
-
-        return keycloak.realm(realm).users();
     }
 
     /**
@@ -160,8 +127,8 @@ public class CustomerService {
      */
     private void assignRole(String userId, String roleName) {
 
-        UserResource user = getUsersResource().get(userId);
-        RolesResource rolesResource = keycloak.realm(realm).roles();
+        UserResource user = keycloakAdapter.getUsersResource().get(userId);
+        RolesResource rolesResource = keycloakAdapter.getRolesResource();
         RoleRepresentation representation = rolesResource.get(roleName).toRepresentation();
         user.roles().realmLevel().add(Collections.singletonList(representation));
     }

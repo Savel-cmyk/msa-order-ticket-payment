@@ -12,6 +12,10 @@ import com.travel.application.orderservice.model.OrderStatus;
 import com.travel.application.orderservice.model.Orders;
 import com.travel.application.orderservice.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -33,7 +37,7 @@ public class OrderService {
      * Service's method that sends request through message broker for ticket info,
      * tries to receive respond and maps all gathered info to OrderResponseDto class
      *
-     * @param orderId
+     * @param orderId order's unique identifier
      * @return order that corresponds to given id in DB in DTO format
      */
     public OrderResponseDto getOrderWithTicketInfo(String orderId) {
@@ -64,10 +68,13 @@ public class OrderService {
      * mapping requested order data to entity format, and then persisting
      * mapped data and returning saved data in DTO format.
      *
-     * @param customerId requested customer's unique identifier
      * @return order data with ticket ID in an appropriate format
      */
-    public OrderWithoutDetailedTicketInfoResponseDto addOrderForTicket(String customerId) {
+    public OrderWithoutDetailedTicketInfoResponseDto addOrderForTicket() {
+
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication auth = context.getAuthentication();
+        String customerId = ((Jwt) auth.getCredentials()).getClaimAsString("sub");
 
         Orders orderEntity = orderMapper.toOrderDao(customerId);
         Orders persistedOrder = orderRepository.save(orderEntity);

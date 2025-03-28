@@ -21,6 +21,7 @@ public class CurrencyController {
      * @param currency currency data in DTO format
      * @return response in JSON format containing persisted currency data in DTO format
      * and status code 201 in case of success
+     * @author Savel-cmyk
      */
     @PreAuthorize("hasRole('MANAGER')")
     @PostMapping("/private")
@@ -37,6 +38,7 @@ public class CurrencyController {
      * @param currencyName currency's name
      * @return response in JSON format containing persisted currency data in DTO format
      * and status code 302 in case of success
+     * @author Savel-cmyk
      */
     @GetMapping("/public/{currencyName}")
     public ResponseEntity<CurrencyDto> getCurrencyByName(

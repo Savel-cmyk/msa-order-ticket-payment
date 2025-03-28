@@ -17,4 +17,9 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
     @Modifying
     @Query("UPDATE Account a SET a.amount = a.amount - :withdraw WHERE a.id = :accountId AND a.amount >= :withdraw")
     int withdrawIfEnough(@Param("withdraw") Double withdraw, @Param("accountId") UUID accountId);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE Account a SET a.amount = a.amount + :change WHERE a.id = :accountId")
+    int putMoney(@Param("change") Double change, @Param("accountId") UUID accountId);
 }

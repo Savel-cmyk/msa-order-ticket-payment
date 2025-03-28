@@ -23,7 +23,7 @@ spring:
         - id: account-service
           uri: lb:http://ACCOUNT-SERVICE
           predicates:
-            - Path=/api/v1/accounts/v3/api-docs**,/api/v1/accounts/swagger-ui**,/api/v1/customer/**,/api/v1/currency/**
+            - Path=/api/v1/accounts/**,/api/v1/customer/**,/api/v1/currency/**
   security:
     oauth2:
       client:

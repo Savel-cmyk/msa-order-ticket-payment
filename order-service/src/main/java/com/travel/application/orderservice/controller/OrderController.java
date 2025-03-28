@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,7 +22,6 @@ public class OrderController {
      * Controller's POST method for creating order record (pseudo-booking) for requested ticket with ticketId info in
      * actual request and order data in DTO format.
      *
-     * @param customerId requested customer's unique identifier
      * @return Status code and result of info gathering (as ticket info is placed in another service) and mapping
      */
     @Operation(
@@ -36,11 +36,10 @@ public class OrderController {
             }
     )
     //TODO: make app retrieve customer id from security context
-    @PostMapping("/{customerId}")
-    public ResponseEntity<OrderWithoutDetailedTicketInfoResponseDto> addOrderForTicket(
-            @PathVariable("customerId") String customerId
-    ) {
-        return new ResponseEntity<>(orderService.addOrderForTicket(customerId), HttpStatus.CREATED);
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'MANAGER')")
+    @PostMapping("/private")
+    public ResponseEntity<OrderWithoutDetailedTicketInfoResponseDto> addOrderForTicket() {
+        return new ResponseEntity<>(orderService.addOrderForTicket(), HttpStatus.CREATED);
     }
 
     /**
@@ -49,7 +48,8 @@ public class OrderController {
      * @param orderId requested order's unique identifier
      * @return Status code and result of info gathering
      */
-    @GetMapping("/{orderId}")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'MANAGER')")
+    @GetMapping("/private/{orderId}")
     public ResponseEntity<OrderResponseDto> getOrderWithTicketInfo(
             @PathVariable("orderId") String orderId
     ) {

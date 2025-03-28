@@ -37,11 +37,6 @@ eureka:
     registerWithEureka: true
     fetchRegistry: true
 
-jwt:
-  auth:
-    converter:
-      resource-id: ${KEYCLOAK_CLIENT_NAME}
-
 app:
   keycloak:
     admin:
