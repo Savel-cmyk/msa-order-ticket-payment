@@ -13,6 +13,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * @author Savel-cmyk
+ * @version 0.0.1
+ */
 @Service
 public class TicketMapper {
 
@@ -21,6 +25,7 @@ public class TicketMapper {
      *
      * @param ticket
      * @return ticket data in DTO format
+     * @author Savel-cmyk
      */
     // TODO: Here may occur exceptions about wrong type conversion (UUID to String and Double to String)
     public TicketResponseDto toTicketResponseDto(Ticket ticket) {
@@ -41,6 +46,7 @@ public class TicketMapper {
      *
      * @param ticketRequest
      * @return ticket data as an entity object
+     * @author Savel-cmyk
      */
     public Ticket toTicket(TicketRequestDto ticketRequest) {
 
@@ -56,12 +62,15 @@ public class TicketMapper {
     }
 
     /**
+     * Method for {@code TicketBookingDtoTemplate.class} implementations to
+     * {@code TicketBookingResponseDto.class} conversion. This method also
+     * appears to be overloading of similar mapping method.
      *
-     *
-     * @param ticketBookingDto
-     * @param ticketStatus
-     * @param ticketId
-     * @return
+     * @param ticketBookingDto {@code TicketBookingDtoTemplate.class} implementation
+     * @param ticketStatus status of ticket booking
+     * @param ticketId ticket's unique identifier
+     * @return ticket booking response data in DTO format
+     * @author Savel-cmyk
      */
     public TicketBookingResponseDto toTicketBookingDto(
             TicketBookingDtoTemplate ticketBookingDto,
@@ -76,12 +85,14 @@ public class TicketMapper {
     }
 
     /**
+     * Method for {@code TicketBookingRequestDto.class} to {@code TicketPaymentRequestDto.class}
+     * conversion. This method also appears to be overloading of similar mapping method.
      *
-     *
-     * @param ticketBookingRequest
-     * @param ticketCost
-     * @param ticketId
-     * @return
+     * @param ticketBookingRequest ticket booking info required for payment
+     * @param ticketCost ticket cost
+     * @param ticketId ticket's unique identifier
+     * @return ticket info in DTO format that is required for payment
+     * @author Savel-cmyk
      */
     public TicketPaymentRequestDto toTicketBookingDto(
             TicketBookingRequestDto ticketBookingRequest,
