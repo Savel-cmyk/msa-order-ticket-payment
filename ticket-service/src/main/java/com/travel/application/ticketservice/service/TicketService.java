@@ -16,6 +16,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * @author Savel-cmyk
+ * @version 0.0.1
+ */
 @Service
 @RequiredArgsConstructor
 public class TicketService {
@@ -29,6 +33,7 @@ public class TicketService {
      *
      * @param ticketInfoRequest
      * @return ticket response in DTO format with adjusted field values
+     * @author Savel-cmyk
      */
     public TicketResponseDto getTicketInfo(TicketInfoRequestDto ticketInfoRequest) {
 
@@ -48,6 +53,7 @@ public class TicketService {
      *
      * @param ticketRequest
      * @return ticket data in TicketResponseDto format
+     * @author Savel-cmyk
      */
     public TicketResponseDto addTicket(TicketRequestDto ticketRequest) {
 
@@ -60,6 +66,7 @@ public class TicketService {
      * Method for retrieving all tickets data from DB and applying map to DTO methods.
      *
      * @return list of all tickets in DTO format that DB contains
+     * @author Savel-cmyk
      */
     public List<TicketResponseDto> getAllTickets() {
 
@@ -70,10 +77,13 @@ public class TicketService {
     }
 
     /**
+     * Method for booking one available ticket, depending on if there are any available:
+     * if there is no ticket, event on order canceling with NO_AVAILABLE_TICKETS status is returned,
+     * if there is at least one ticket, event on payment request is returned.
      *
-     *
-     * @param ticketBookingRequest
-     * @return
+     * @param ticketBookingRequest ticket info that is required for booking steps
+     * @return event on order canceling with NO_AVAILABLE_TICKETS status or on payment request
+     * @author Savel-cmyk
      */
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public TicketBookingDtoTemplate bookAvailableTicket(TicketBookingRequestDto ticketBookingRequest) {
@@ -92,10 +102,11 @@ public class TicketService {
     }
 
     /**
+     * Method for canceling ticket booking and releasing ticket that is on hold for payment.
      *
-     *
-     * @param ticketPaymentResponse
-     * @return
+     * @param ticketPaymentResponse ticket info that is required for canceling and producing canceling event
+     * @return event on order canceling due to interrupted payment
+     * @author Savel-cmyk
      */
     @Transactional
     public TicketBookingResponseDto cancelBooking(TicketBookingResponseDto ticketPaymentResponse) {
@@ -118,10 +129,12 @@ public class TicketService {
     }
 
     /**
+     * Method for confirming ticket booking and changing ticket status that is on
+     * hold for payment to BOOKED.
      *
-     *
-     * @param ticketPaymentResponse
-     * @return
+     * @param ticketPaymentResponse ticket info that is required for booking and producing confirmation event
+     * @return event on order confirmation due to successful payment
+     * @author Savel-cmyk
      */
     @Transactional
     public TicketBookingResponseDto confirmBooking(TicketBookingResponseDto ticketPaymentResponse) {
