@@ -32,9 +32,6 @@ spring:
           trusted.packages: '*'
           type.mapping: ticketBookingResponseDto:com.travel.application.orderservice.dto.TicketBookingResponseDto,ticketResponseDto:com.travel.application.orderservice.dto.TicketResponseDto
 
-logging:
-  config: classpath:logback-spring.xml
-
 server:
   port: ${ORDER_SERVER_PORT}
 
